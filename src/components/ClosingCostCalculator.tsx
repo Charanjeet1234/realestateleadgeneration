@@ -59,7 +59,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
           <Calculator className="w-3.5 h-3.5" />
           RERA & ADREC Regulatory Fee Engine
         </div>
-        <h2 className="text-2xl sm:text-4xl font-serif font-extrabold text-white">
+        <h2 className="text-2xl sm:text-4xl font-serif font-medium text-slate-50">
           UAE Government & Closing Fee Breakdown
         </h2>
         <p className="mt-2 text-xs sm:text-sm text-slate-400">
@@ -74,8 +74,8 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
             onClick={() => setMode('buy')}
             className={`px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
               mode === 'buy'
-                ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-amber-500 text-onyx shadow-lg shadow-amber-500/20'
+                : 'text-slate-400 hover:text-slate-50'
             }`}
           >
             Property Purchase (Off-Plan & Ready)
@@ -84,8 +84,8 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
             onClick={() => setMode('rent')}
             className={`px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all ${
               mode === 'rent'
-                ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-amber-500 text-onyx shadow-lg shadow-amber-500/20'
+                : 'text-slate-400 hover:text-slate-50'
             }`}
           >
             Annual Rental Lease (Move-In Costs)
@@ -95,8 +95,8 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Controls Column */}
-        <div className="lg:col-span-6 bg-[#0b132b] border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-5">
-          <h3 className="font-serif font-bold text-white text-base flex items-center gap-2">
+        <div className="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-5">
+          <h3 className="font-serif font-semibold text-slate-50 text-base flex items-center gap-2">
             <Building className="w-4 h-4 text-amber-400" />
             Transaction Parameters
           </h3>
@@ -114,7 +114,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     className={`py-2.5 px-3 rounded-xl border text-center transition-all ${
                       emirate === 'Dubai'
                         ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold'
-                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-50'
                     }`}
                   >
                     Dubai (4% DLD)
@@ -124,7 +124,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     className={`py-2.5 px-3 rounded-xl border text-center transition-all ${
                       emirate === 'Abu Dhabi'
                         ? 'bg-amber-500/20 border-amber-500 text-amber-300 font-bold'
-                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-50'
                     }`}
                   >
                     Abu Dhabi (2% DMT)
@@ -143,7 +143,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     className={`py-2 px-3 rounded-xl border text-center transition-all ${
                       isOffPlan
                         ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-50'
                     }`}
                   >
                     Off-Plan (Oqood Registration)
@@ -153,7 +153,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     className={`py-2 px-3 rounded-xl border text-center transition-all ${
                       !isOffPlan
                         ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-50'
                     }`}
                   >
                     Ready Property (Title Deed)
@@ -239,7 +239,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     className={`py-2 px-3 rounded-xl border text-center transition-all ${
                       !isFurnished
                         ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-50'
                     }`}
                   >
                     Unfurnished (5% Deposit)
@@ -249,7 +249,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     className={`py-2 px-3 rounded-xl border text-center transition-all ${
                       isFurnished
                         ? 'bg-amber-500/20 border-amber-500 text-amber-300'
-                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-white'
+                        : 'border-slate-800 bg-slate-900 text-slate-400 hover:text-slate-50'
                     }`}
                   >
                     Fully Furnished (10% Deposit)
@@ -272,10 +272,10 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
         </div>
 
         {/* Breakdown Output Column */}
-        <div className="lg:col-span-6 bg-gradient-to-b from-[#0f172a] to-[#0b132b] border border-amber-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl flex flex-col justify-between">
+        <div className="lg:col-span-6 bg-gradient-to-b from-slate-900 to-slate-900 border border-amber-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <h3 className="font-serif font-bold text-white text-base">
+              <h3 className="font-serif font-semibold text-slate-50 text-base">
                 Itemized Closing Schedule
               </h3>
               <span className="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
@@ -295,7 +295,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                       {emirate === 'Dubai' ? 'Mandatory transfer fee to Dubai Land Dept.' : 'Abu Dhabi DMT land registry fee'}
                     </span>
                   </div>
-                  <span className="font-mono font-bold text-white text-sm">
+                  <span className="font-mono font-bold text-slate-50 text-sm">
                     AED {purchaseCosts.governmentRegistrationFee.toLocaleString()}
                   </span>
                 </div>
@@ -310,7 +310,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                       {emirate === 'Dubai' ? 'DLD trustee registration & system fee' : 'DMT documentation fee'}
                     </span>
                   </div>
-                  <span className="font-mono font-bold text-white text-sm">
+                  <span className="font-mono font-bold text-slate-50 text-sm">
                     AED {purchaseCosts.governmentAdminFee.toLocaleString()}
                   </span>
                 </div>
@@ -325,7 +325,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                       {isOffPlan ? 'Mandatory interim property registry certificate' : 'Permanent ownership deed'}
                     </span>
                   </div>
-                  <span className="font-mono font-bold text-white text-sm">
+                  <span className="font-mono font-bold text-slate-50 text-sm">
                     AED {purchaseCosts.oqoodOrDeedFee.toLocaleString()}
                   </span>
                 </div>
@@ -340,7 +340,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                       Mandated professional real estate agency fee
                     </span>
                   </div>
-                  <span className="font-mono font-bold text-white text-sm">
+                  <span className="font-mono font-bold text-slate-50 text-sm">
                     AED {(purchaseCosts.agencyFee + purchaseCosts.agencyFeeVat).toLocaleString()}
                   </span>
                 </div>
@@ -381,7 +381,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                   <span className="text-xs font-bold text-slate-300">
                     {includeMortgage ? 'Total Initial Equity Needed (20% + Fees):' : 'Total Acquisition Outlay (100% Cash):'}
                   </span>
-                  <span className="text-base font-extrabold text-white font-mono">
+                  <span className="text-base font-extrabold text-slate-50 font-mono">
                     AED {(includeMortgage ? totalBuyOutlayWithMortgage : purchaseCosts.totalCashOutlay).toLocaleString()}
                   </span>
                 </div>
@@ -396,7 +396,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     </span>
                     <span className="text-[10px] text-slate-400">Quarterly rent payment</span>
                   </div>
-                  <span className="font-mono font-bold text-white text-sm">
+                  <span className="font-mono font-bold text-slate-50 text-sm">
                     AED {(rentAED / 4).toLocaleString()}
                   </span>
                 </div>
@@ -409,7 +409,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     </span>
                     <span className="text-[10px] text-slate-400">Returned upon tenancy handover</span>
                   </div>
-                  <span className="font-mono font-bold text-white text-sm">
+                  <span className="font-mono font-bold text-slate-50 text-sm">
                     AED {rentalCosts.securityDeposit.toLocaleString()}
                   </span>
                 </div>
@@ -422,7 +422,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     </span>
                     <span className="text-[10px] text-slate-400">RERA mandated annual brokerage fee</span>
                   </div>
-                  <span className="font-mono font-bold text-white text-sm">
+                  <span className="font-mono font-bold text-slate-50 text-sm">
                     AED {(rentalCosts.agencyFee + rentalCosts.agencyFeeVat).toLocaleString()}
                   </span>
                 </div>
@@ -435,7 +435,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                     </span>
                     <span className="text-[10px] text-slate-400">AED 220 Ejari + AED 2,130 utility deposit</span>
                   </div>
-                  <span className="font-mono font-bold text-white text-sm">
+                  <span className="font-mono font-bold text-slate-50 text-sm">
                     AED {(rentalCosts.ejariOrTawtheeqFee + rentalCosts.utilityDeposit).toLocaleString()}
                   </span>
                 </div>
@@ -466,7 +466,7 @@ export const ClosingCostCalculator: React.FC<ClosingCostCalculatorProps> = ({
                   `Official ${emirate} DLD Fee & Closing Schedule PDF (AED ${priceAED.toLocaleString()})`
                 )
               }
-              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center gap-2 hover:scale-101"
+              className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 text-onyx font-bold text-xs sm:text-sm shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center gap-2 hover:scale-101"
             >
               <Download className="w-4 h-4" />
               <span>Get Official DLD Closing Statement PDF via WhatsApp</span>

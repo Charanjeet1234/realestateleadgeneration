@@ -31,7 +31,7 @@ import { LeadDetailDrawer } from './LeadDetailDrawer';
 import { Button, ErrorNote, Field, Modal, formatDateTime, inputCls, timeAgo, waLink } from './ui';
 
 const toolbarSelect =
-  'px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-amber-400';
+  'px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-50 focus:outline-none focus:border-amber-400';
 
 type StatusFilter = LeadStatus | 'OPEN' | 'ALL';
 
@@ -169,7 +169,7 @@ export const BrokerLeadsInbox: React.FC<Props> = ({ initialLeadId, onStatsChange
             <Users className="w-3.5 h-3.5 text-amber-400" />
             {isAdmin ? 'Agency pipeline · all leads' : `My pipeline · ${user?.name}`}
           </div>
-          <h2 className="text-2xl sm:text-3xl font-serif font-extrabold text-white tracking-tight">Lead inbox</h2>
+          <h2 className="text-2xl sm:text-3xl font-serif font-medium text-slate-50 tracking-tight">Lead inbox</h2>
           <p className="text-sm text-slate-400 mt-1">
             Every inquiry from the site, brochure gates and AI assistant. Target: first contact within 15 minutes.
           </p>
@@ -249,8 +249,8 @@ export const BrokerLeadsInbox: React.FC<Props> = ({ initialLeadId, onStatsChange
             onClick={() => set({ status: value })}
             className={`whitespace-nowrap px-3 py-1.5 rounded-lg border font-semibold transition-colors ${
               filters.status === value
-                ? 'bg-amber-500 text-slate-950 border-amber-500'
-                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                ? 'bg-amber-500 text-onyx border-amber-500'
+                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-50'
             }`}
           >
             {label}
@@ -315,7 +315,7 @@ export const BrokerLeadsInbox: React.FC<Props> = ({ initialLeadId, onStatsChange
       <ErrorNote message={error} />
 
       {/* Table */}
-      <div className="mt-2 bg-[#0b132b] border border-slate-800 rounded-2xl overflow-hidden shadow-2xl overflow-x-auto">
+      <div className="mt-2 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl overflow-x-auto">
         <table className="w-full text-left text-xs min-w-[960px]">
           <thead className="bg-slate-950 text-slate-400 font-semibold uppercase tracking-wider text-[10px] border-b border-slate-800">
             <tr>
@@ -348,7 +348,7 @@ export const BrokerLeadsInbox: React.FC<Props> = ({ initialLeadId, onStatsChange
                           {lead.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <span className="font-bold text-white text-sm group-hover:text-amber-300 flex items-center gap-1">
+                          <span className="font-bold text-slate-50 text-sm group-hover:text-amber-300 flex items-center gap-1">
                             {lead.name}
                             {lead.isVip && <Star className="w-3 h-3 text-amber-400 fill-amber-400" />}
                           </span>
@@ -364,7 +364,7 @@ export const BrokerLeadsInbox: React.FC<Props> = ({ initialLeadId, onStatsChange
                       <div className="text-slate-500 truncate max-w-[180px]">{lead.email}</div>
                     </td>
                     <td className="py-3 px-3 max-w-[220px]">
-                      <div className="text-white truncate">{lead.propertyTitle || lead.preferredLocation || '—'}</div>
+                      <div className="text-slate-50 truncate">{lead.propertyTitle || lead.preferredLocation || '—'}</div>
                       <div className="text-[10px] text-slate-400 truncate">
                         {[TRANSACTION_LABELS[lead.transactionType], lead.budget].filter(Boolean).join(' · ')}
                       </div>
@@ -468,13 +468,13 @@ export const BrokerLeadsInbox: React.FC<Props> = ({ initialLeadId, onStatsChange
 
       {/* Lead sources */}
       {stats && stats.bySource.length > 0 && (
-        <div className="mt-8 bg-[#0b132b] border border-slate-800 rounded-2xl p-5">
-          <h3 className="text-sm font-bold text-white mb-3">Top lead sources · last 30 days</h3>
+        <div className="mt-8 bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <h3 className="text-sm font-bold text-slate-50 mb-3">Top lead sources · last 30 days</h3>
           <ul className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-xs">
             {stats.bySource.map((s) => (
               <li key={s.source} className="flex items-center justify-between border-b border-slate-800/70 pb-1.5">
                 <span className="text-slate-300 truncate">{s.source}</span>
-                <span className="font-mono font-bold text-white">{s.count}</span>
+                <span className="font-mono font-bold text-slate-50">{s.count}</span>
               </li>
             ))}
           </ul>
@@ -527,13 +527,13 @@ function StatTile({
   return (
     <Tag
       onClick={onClick}
-      className={`text-left bg-[#0b132b] border border-slate-800 rounded-2xl p-3.5 ${onClick ? 'hover:border-amber-500/40 transition-colors' : ''}`}
+      className={`text-left bg-slate-900 border border-slate-800 rounded-2xl p-3.5 ${onClick ? 'hover:border-amber-500/40 transition-colors' : ''}`}
     >
       <span className="flex items-center gap-1.5 text-slate-400 text-[11px]">
         {icon}
         {label}
       </span>
-      <span className={`block text-2xl font-bold font-serif mt-1 ${accent ?? 'text-white'}`}>{value}</span>
+      <span className={`block text-2xl font-semibold font-serif mt-1 ${accent ?? 'text-slate-50'}`}>{value}</span>
       {hint && <span className="block text-[10px] text-slate-500">{hint}</span>}
     </Tag>
   );
@@ -544,7 +544,7 @@ function ToggleChip({ active, onClick, children }: { active: boolean; onClick: (
     <button
       onClick={onClick}
       className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-        active ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
+        active ? 'bg-amber-500/20 border-amber-500/50 text-amber-300' : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-50'
       }`}
     >
       {children}

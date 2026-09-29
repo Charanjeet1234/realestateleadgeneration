@@ -196,7 +196,7 @@ export const ListingsAdmin: React.FC<{ onDataChanged: () => void }> = ({ onDataC
         </Button>
       </div>
       <ErrorNote message={error} />
-      <div className="bg-[#0b132b] border border-slate-800 rounded-2xl overflow-x-auto">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
         <table className="w-full text-xs min-w-[820px]">
           <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider">
             <tr>
@@ -215,7 +215,7 @@ export const ListingsAdmin: React.FC<{ onDataChanged: () => void }> = ({ onDataC
                   <div className="flex items-center gap-3">
                     <img src={p.imageUrl} alt="" className="w-14 h-10 object-cover rounded-md border border-slate-800" loading="lazy" />
                     <div className="min-w-0">
-                      <div className="font-bold text-white truncate max-w-[260px]">{p.title}</div>
+                      <div className="font-bold text-slate-50 truncate max-w-[260px]">{p.title}</div>
                       <div className="text-[10px] text-slate-400">
                         {p.developer} · {p.community}, {p.emirate}
                       </div>
@@ -397,7 +397,7 @@ function PropertyEditor({
                   key={u}
                   onClick={() => set('unitTypes', on ? f.unitTypes.filter((x) => x !== u) : [...f.unitTypes, u])}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-semibold border ${
-                    on ? 'bg-amber-500 text-slate-950 border-amber-500' : 'border-slate-700 text-slate-400'
+                    on ? 'bg-amber-500 text-onyx border-amber-500' : 'border-slate-700 text-slate-400'
                   }`}
                 >
                   {u}

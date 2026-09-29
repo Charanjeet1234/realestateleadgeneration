@@ -46,7 +46,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
             <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
             Live Q3/Q4 Real-Time Rental Benchmarks Index
           </div>
-          <h2 className="text-2xl sm:text-4xl font-serif font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-serif font-medium text-slate-50 tracking-tight">
             Dubai & Abu Dhabi Rental Index & Yield Matrix
           </h2>
           <p className="text-sm text-slate-400 mt-1 max-w-2xl">
@@ -56,7 +56,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
 
         <button
           onClick={() => onOpenLeadModal('Official DLD Community Rental & Yield Audit Report')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 hover:scale-102 transition-all self-start md:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-onyx text-xs font-bold shadow-lg shadow-amber-500/20 hover:scale-102 transition-all self-start md:self-auto"
         >
           <Sparkles className="w-3.5 h-3.5" />
           Download 2026 DLD Rental Yield PDF
@@ -67,7 +67,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
       <RoiComparisonWidget onAskAi={onAskAi} onOpenLeadModal={onOpenLeadModal} />
 
       {/* Compliance Guidelines Alert Box */}
-      <div className="bg-[#0b132b] border border-amber-500/30 rounded-2xl p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+      <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-4 mb-6 grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
         <div className="border-r md:border-slate-800 pr-2">
           <span className="text-amber-400 font-bold block mb-1 flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5" />
@@ -115,7 +115,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
             placeholder="Search community or developer..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+            className="w-full pl-9 pr-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400"
           />
         </div>
 
@@ -123,7 +123,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
           <button
             onClick={() => setSelectedEmirate('ALL')}
             className={`px-3 py-1.5 rounded-lg transition-colors font-medium ${
-              selectedEmirate === 'ALL' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+              selectedEmirate === 'ALL' ? 'bg-amber-500 text-onyx font-bold' : 'text-slate-400 hover:text-slate-50'
             }`}
           >
             All Emirates ({LIVE_RENTAL_BENCHMARKS.length})
@@ -131,7 +131,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
           <button
             onClick={() => setSelectedEmirate('Dubai')}
             className={`px-3 py-1.5 rounded-lg transition-colors font-medium ${
-              selectedEmirate === 'Dubai' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+              selectedEmirate === 'Dubai' ? 'bg-amber-500 text-onyx font-bold' : 'text-slate-400 hover:text-slate-50'
             }`}
           >
             Dubai
@@ -139,7 +139,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
           <button
             onClick={() => setSelectedEmirate('Abu Dhabi')}
             className={`px-3 py-1.5 rounded-lg transition-colors font-medium ${
-              selectedEmirate === 'Abu Dhabi' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-400 hover:text-white'
+              selectedEmirate === 'Abu Dhabi' ? 'bg-amber-500 text-onyx font-bold' : 'text-slate-400 hover:text-slate-50'
             }`}
           >
             Abu Dhabi
@@ -148,7 +148,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
       </div>
 
       {/* Table Container */}
-      <div className="bg-[#0b132b]/80 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl overflow-x-auto">
+      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl overflow-x-auto">
         <table className="w-full text-left text-xs">
           <thead className="bg-slate-950/80 text-slate-400 font-semibold uppercase tracking-wider text-[11px] border-b border-slate-800">
             <tr>
@@ -173,7 +173,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
                   <div className="flex items-start gap-2">
                     <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold text-white group-hover:text-amber-300 transition-colors block text-sm">
+                      <span className="font-bold text-slate-50 group-hover:text-amber-300 transition-colors block text-sm">
                         {row.community}
                       </span>
                       <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
@@ -193,13 +193,13 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
 
                 {/* 1BR Rent */}
                 <td className="py-4 px-3">
-                  <span className="font-semibold text-white block">{row.oneBedRentAED}</span>
+                  <span className="font-semibold text-slate-50 block">{row.oneBedRentAED}</span>
                   <span className="text-[10px] text-slate-400">Studio: {row.studioRentAED.split('–')[0]}</span>
                 </td>
 
                 {/* 2BR Rent */}
                 <td className="py-4 px-3">
-                  <span className="font-semibold text-white block">{row.twoBedRentAED}</span>
+                  <span className="font-semibold text-slate-50 block">{row.twoBedRentAED}</span>
                   <span className="text-[10px] text-slate-400">3BR: {row.threeBedRentAED.split('–')[0]}</span>
                 </td>
 
@@ -241,7 +241,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
                         )
                       }
                       title="Ask AI Copilot"
-                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
+                      className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-slate-50 transition-colors"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                     </button>

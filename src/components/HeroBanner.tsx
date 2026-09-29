@@ -40,68 +40,71 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       ? ABU_DHABI_COMMUNITIES
       : ALL_COMMUNITIES;
 
-  return (
-    <div className="relative pt-6 pb-10 px-4 sm:px-6 lg:px-8 border-b border-slate-800 bg-radial from-[#132042] via-[#0b132b] to-[#080d1a]">
-      {/* Background glow aesthetic */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-4xl h-64 bg-amber-500/10 blur-[120px] pointer-events-none rounded-full" />
+  const trending = [
+    ['JVC yields above 8%', 'What are the highest rental yield off-plan projects in JVC & Business Bay under AED 1.2M?'],
+    ['Danube 1% monthly plans', 'Show me Danube 1% monthly payment plan projects in Dubai South'],
+    ['Saadiyat vs Palm Jumeirah', 'Compare Saadiyat Island vs Palm Jumeirah luxury waterfront villas with handover in 2027'],
+    ['Fees on AED 2.5M', 'Break down total DLD 4%, Admin fees, and 2% Agency fee on AED 2.5M purchase'],
+  ] as const;
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Top Badges */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            Elite Sales & Acquisition Intelligence Engine
-          </div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium">
-            <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            DLD & ADREC Regulatory Standard
+  return (
+    <div className="theme-dark relative overflow-hidden bg-slate-950">
+      {/* Dusk skyline — photo with Gulf-night gradient so text stays legible (and the hero still works if the image fails) */}
+      <div className="absolute inset-0" aria-hidden="true">
+        <img
+          src="https://images.unsplash.com/photo-1749273858638-ea678cb48e94?auto=format&fit=crop&w=2400&q=80"
+          alt=""
+          className="w-full h-full object-cover object-[center_60%] opacity-70"
+          fetchPriority="high"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-gulf via-gulf/85 to-gulf/20" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gulf via-transparent to-gulf/40" />
+      </div>
+
+      <div className="max-w-7xl mx-auto relative z-10 px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 pb-10">
+        <div className="max-w-4xl">
+          <p className="hero-rise flex items-center gap-2 text-sm text-champagne/90">
+            <Shield className="w-4 h-4" />
+            RERA &amp; ADREC licensed brokerage
+          </p>
+          <h1 className="hero-rise mt-5 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[4.6rem] font-serif font-normal tracking-[-0.02em] text-slate-50">
+            Waterfront homes and off-plan launches across Dubai &amp; Abu Dhabi
+          </h1>
+          <div className="hero-rise-delay brass-rule w-40 mt-8" />
+          <p className="hero-rise-delay mt-6 text-slate-300 text-base sm:text-lg max-w-2xl leading-relaxed">
+            Every listing shows its full DLD fees, payment plan and verified rental yield. Tell us what you are looking for and a specialist replies within 15 minutes.
+          </p>
+          <div className="hero-rise-delay mt-8 flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => onOpenLeadModal('Private viewing & shortlist request')}
+              className="px-6 py-3.5 rounded-full bg-champagne hover:bg-amber-200 text-onyx text-sm font-medium tracking-wide transition-colors"
+            >
+              Get a private shortlist
+            </button>
+            <button
+              onClick={() => document.getElementById('listings')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-6 py-3.5 rounded-full border border-champagne/50 hover:border-champagne text-slate-100 text-sm tracking-wide transition-colors"
+            >
+              Browse {totalCount} residences
+            </button>
           </div>
         </div>
 
-        {/* Hero Title */}
-        <div className="text-center max-w-4xl mx-auto mb-8">
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-extrabold tracking-tight text-white leading-tight">
-            High-Yield Property & Luxury Assets Across{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-200">
-              Dubai & Abu Dhabi
-            </span>
-          </h1>
-          <p className="mt-4 text-slate-300 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-            Direct developer allocations, live rental yield benchmarks, and compliant DLD/DMT closing schedules. Connect with a Senior Specialist in under 15 minutes.
-          </p>
-
-          {/* Quick AI Intent Prompts */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <span className="text-slate-400">Trending Queries:</span>
+        <div className="mt-14 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+          <span className="text-slate-400">Ask our AI advisor:</span>
+          {trending.map(([label, prompt]) => (
             <button
-              onClick={() => onSelectAiSearch('What are the highest rental yield off-plan projects in JVC & Business Bay under AED 1.2M?')}
-              className="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700 transition-colors"
+              key={label}
+              onClick={() => onSelectAiSearch(prompt)}
+              className="text-slate-200 underline decoration-champagne/40 underline-offset-4 hover:decoration-champagne hover:text-slate-50 transition-colors"
             >
-              🔥 JVC 8%+ Net Yields
+              {label}
             </button>
-            <button
-              onClick={() => onSelectAiSearch('Show me Danube 1% monthly payment plan projects in Dubai South')}
-              className="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700 transition-colors"
-            >
-              💳 Danube 1% Monthly Plan
-            </button>
-            <button
-              onClick={() => onSelectAiSearch('Compare Saadiyat Island vs Palm Jumeirah luxury waterfront villas with handover in 2027')}
-              className="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700 transition-colors"
-            >
-              🏖️ Saadiyat vs Palm Jumeirah
-            </button>
-            <button
-              onClick={() => onSelectAiSearch('Break down total DLD 4%, Admin fees, and 2% Agency fee on AED 2.5M purchase')}
-              className="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700 transition-colors"
-            >
-              ⚖️ DLD 4% Fee Breakdown
-            </button>
-          </div>
+          ))}
         </div>
 
         {/* Filter Box Card */}
-        <div className="bg-[#0b132b]/90 border border-amber-500/30 rounded-2xl p-4 sm:p-6 shadow-2xl backdrop-blur-xl">
+        <div className="theme-light mt-8 bg-slate-900 text-slate-300 rounded-3xl p-4 sm:p-6 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.55)]">
           {/* Main Category Switches */}
           <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-slate-800">
             {/* Category selection */}
@@ -110,8 +113,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 onClick={() => setFilters(f => ({ ...f, transactionType: 'ALL' }))}
                 className={`px-3 py-1.5 rounded-lg transition-all ${
                   filters.transactionType === 'ALL'
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-amber-500 text-onyx font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-slate-50'
                 }`}
               >
                 All Listings
@@ -120,8 +123,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 onClick={() => setFilters(f => ({ ...f, transactionType: 'Off-Plan' }))}
                 className={`px-3 py-1.5 rounded-lg transition-all ${
                   filters.transactionType === 'Off-Plan'
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-amber-500 text-onyx font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-slate-50'
                 }`}
               >
                 Buy: Off-Plan
@@ -130,8 +133,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 onClick={() => setFilters(f => ({ ...f, transactionType: 'Ready Apartments' }))}
                 className={`px-3 py-1.5 rounded-lg transition-all ${
                   filters.transactionType === 'Ready Apartments'
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-amber-500 text-onyx font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-slate-50'
                 }`}
               >
                 Ready Apartments
@@ -140,8 +143,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 onClick={() => setFilters(f => ({ ...f, transactionType: 'Ready Villas' }))}
                 className={`px-3 py-1.5 rounded-lg transition-all ${
                   filters.transactionType === 'Ready Villas'
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-amber-500 text-onyx font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-slate-50'
                 }`}
               >
                 Ready Villas
@@ -150,8 +153,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 onClick={() => setFilters(f => ({ ...f, transactionType: 'Annual Rent' }))}
                 className={`px-3 py-1.5 rounded-lg transition-all ${
                   filters.transactionType === 'Annual Rent'
-                    ? 'bg-amber-500 text-slate-950 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    ? 'bg-amber-500 text-onyx font-bold shadow-sm'
+                    : 'text-slate-400 hover:text-slate-50'
                 }`}
               >
                 Rent (1–4 Cheques)
@@ -164,7 +167,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               <button
                 onClick={() => setFilters(f => ({ ...f, emirate: 'ALL', community: 'ALL' }))}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
-                  filters.emirate === 'ALL' ? 'bg-slate-800 text-amber-300' : 'text-slate-400 hover:text-white'
+                  filters.emirate === 'ALL' ? 'bg-slate-800 text-amber-300' : 'text-slate-400 hover:text-slate-50'
                 }`}
               >
                 All UAE
@@ -172,7 +175,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               <button
                 onClick={() => setFilters(f => ({ ...f, emirate: 'Dubai', community: 'ALL' }))}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
-                  filters.emirate === 'Dubai' ? 'bg-slate-800 text-amber-300' : 'text-slate-400 hover:text-white'
+                  filters.emirate === 'Dubai' ? 'bg-slate-800 text-amber-300' : 'text-slate-400 hover:text-slate-50'
                 }`}
               >
                 Dubai
@@ -180,7 +183,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               <button
                 onClick={() => setFilters(f => ({ ...f, emirate: 'Abu Dhabi', community: 'ALL' }))}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
-                  filters.emirate === 'Abu Dhabi' ? 'bg-slate-800 text-amber-300' : 'text-slate-400 hover:text-white'
+                  filters.emirate === 'Abu Dhabi' ? 'bg-slate-800 text-amber-300' : 'text-slate-400 hover:text-slate-50'
                 }`}
               >
                 Abu Dhabi
@@ -202,7 +205,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                   placeholder="e.g. Marina, Lagoon, Beachfront, 1% Monthly..."
                   value={filters.searchQuery}
                   onChange={(e) => setFilters(f => ({ ...f, searchQuery: e.target.value }))}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+                  className="w-full pl-9 pr-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
                 />
               </div>
             </div>
@@ -217,7 +220,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 <select
                   value={filters.community}
                   onChange={(e) => setFilters(f => ({ ...f, community: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
+                  className="w-full px-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-slate-50 focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
                 >
                   <option value="ALL">All Communities</option>
                   {availableCommunities.map((c) => (
@@ -240,7 +243,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 <select
                   value={filters.developer}
                   onChange={(e) => setFilters(f => ({ ...f, developer: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
+                  className="w-full px-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-slate-50 focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
                 >
                   <option value="ALL">All Master Developers</option>
                   {ALL_DEVELOPERS.map((d) => (
@@ -262,7 +265,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 <select
                   value={filters.unitType}
                   onChange={(e) => setFilters(f => ({ ...f, unitType: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-white focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
+                  className="w-full px-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-slate-50 focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
                 >
                   <option value="ALL">All Bed Configurations</option>
                   <option value="Studio">Studio</option>
@@ -286,7 +289,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors ${
                   filters.paymentPlanFilter === '1% Monthly'
                     ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold'
-                    : 'border-slate-800 text-slate-400 hover:text-white'
+                    : 'border-slate-800 text-slate-400 hover:text-slate-50'
                 }`}
               >
                 1% Monthly Plans
@@ -296,7 +299,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors ${
                   filters.paymentPlanFilter === 'Post-Handover'
                     ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold'
-                    : 'border-slate-800 text-slate-400 hover:text-white'
+                    : 'border-slate-800 text-slate-400 hover:text-slate-50'
                 }`}
               >
                 Post-Handover Available
@@ -306,7 +309,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors ${
                   filters.paymentPlanFilter === 'Golden Visa'
                     ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 font-bold'
-                    : 'border-slate-800 text-slate-400 hover:text-white'
+                    : 'border-slate-800 text-slate-400 hover:text-slate-50'
                 }`}
               >
                 Golden Visa (AED 2.0M+)

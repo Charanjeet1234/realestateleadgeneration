@@ -198,7 +198,7 @@ export default function App() {
   const handleStatsChange = useCallback((s: LeadStats) => setLeadCount(s.open), []);
 
   return (
-    <div className="min-h-screen bg-[#080d1a] text-slate-100 flex flex-col font-sans selection:bg-amber-400/30 selection:text-amber-200">
+    <div className="min-h-screen bg-slate-950 text-slate-300 flex flex-col font-sans">
       {/* Universal Header */}
       <Header
         activeTab={activeTab}
@@ -228,37 +228,34 @@ export default function App() {
             />
 
             {/* Properties Catalog Section */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div id="listings" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 scroll-mt-28">
               {/* Section Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-                      Curated Investment & Rental Inventory
-                    </h2>
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/40">
-                      {filteredProperties.length} Properties
-                    </span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                    Direct developer allocations with transparent DLD/DMT closing fees and verified net yields.
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+                <div className="max-w-2xl">
+                  <h2 className="text-4xl sm:text-5xl font-serif font-normal tracking-[-0.02em] text-slate-50">
+                    Available residences
+                  </h2>
+                  <p className="mt-3 text-slate-400 text-base leading-relaxed">
+                    {listingsLoading
+                      ? 'Loading current inventory'
+                      : `${filteredProperties.length} ${filteredProperties.length === 1 ? 'home' : 'homes'} with developer pricing, closing fees and verified yields.`}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => setActiveTab('benchmarks')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-medium transition-colors"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-slate-700 text-slate-300 hover:text-slate-50 hover:border-slate-500 text-sm transition-colors"
                   >
-                    <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-                    Live Rent Benchmarks
+                    <TrendingUp className="w-4 h-4 text-amber-400" />
+                    Rents &amp; yields by area
                   </button>
                   <button
-                    onClick={() => handleOpenLeadModal('Full Dubai & Abu Dhabi Off-Market Unit List')}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-semibold transition-colors"
+                    onClick={() => handleOpenLeadModal('Off-market unit list')}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gulf hover:bg-gulf-deep text-champagne text-sm transition-colors"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    Off-Market Allocation List
+                    <Download className="w-4 h-4" />
+                    Off-market unit list
                   </button>
                 </div>
               </div>
@@ -267,11 +264,11 @@ export default function App() {
               {listingsLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-busy="true">
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="h-96 rounded-3xl bg-[#0b132b] border border-slate-800 animate-pulse" />
+                    <div key={i} className="h-96 rounded-3xl bg-slate-900 border border-slate-800 animate-pulse" />
                   ))}
                 </div>
               ) : listingsError ? (
-                <div className="bg-[#0b132b] border border-slate-800 rounded-3xl p-10 text-center max-w-xl mx-auto space-y-3">
+                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-10 text-center max-w-xl mx-auto space-y-3">
                   <p className="text-sm text-slate-300">We couldn't load the listings right now.</p>
                   <div className="flex justify-center gap-2">
                     <button onClick={reloadListings} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-xl font-semibold">
@@ -279,18 +276,18 @@ export default function App() {
                     </button>
                     <button
                       onClick={() => handleOpenLeadModal('Property Search Assistance')}
-                      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs rounded-xl font-bold"
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-onyx text-xs rounded-xl font-bold"
                     >
                       Ask a specialist
                     </button>
                   </div>
                 </div>
               ) : filteredProperties.length === 0 ? (
-                <div className="bg-[#0b132b] border border-slate-800 rounded-3xl p-12 text-center max-w-xl mx-auto space-y-4">
+                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center max-w-xl mx-auto space-y-4">
                   <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
                     <Compass className="w-8 h-8" />
                   </div>
-                  <h3 className="text-xl font-serif font-bold text-white">
+                  <h3 className="text-xl font-serif font-semibold text-slate-50">
                     No Direct Matches for Current Criteria
                   </h3>
                   <p className="text-xs text-slate-400 leading-relaxed">
@@ -316,7 +313,7 @@ export default function App() {
                     </button>
                     <button
                       onClick={() => handleOpenLeadModal('Custom Off-Market Portfolio Request')}
-                      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs rounded-xl font-bold shadow-md"
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-onyx text-xs rounded-xl font-bold shadow-md"
                     >
                       Request Private Allocation
                     </button>
@@ -344,39 +341,42 @@ export default function App() {
                 </div>
               )}
 
-              {/* Conversion Lead Magnet Banner */}
-              <div className="mt-16 bg-gradient-to-r from-[#101b3b] via-[#0b132b] to-[#101b3b] border border-amber-500/40 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-                <div className="max-w-3xl relative z-10">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-semibold mb-3">
-                    <Award className="w-3.5 h-3.5" />
-                    VIP Institutional Client Privileges
+              {/* Pre-launch access */}
+              <div className="theme-dark mt-24 relative overflow-hidden rounded-[28px] bg-slate-950">
+                <img
+                  src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1800&q=75"
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 w-full h-full object-cover opacity-35"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-gulf via-gulf/90 to-gulf/30" aria-hidden="true" />
+                <div className="relative z-10 grid lg:grid-cols-[1.4fr_1fr] gap-10 p-8 sm:p-14">
+                  <div>
+                    <h3 className="text-3xl sm:text-5xl font-serif font-normal tracking-[-0.02em] text-slate-50 leading-[1.08]">
+                      See pre-launch units before they reach the market
+                    </h3>
+                    <div className="brass-rule w-32 mt-7" />
+                    <p className="mt-6 text-slate-300 text-base leading-relaxed max-w-xl">
+                      Developers release early inventory to registered buyers first. We send the price sheet and floor plans, and arrange a private viewing with airport pickup for overseas investors.
+                    </p>
                   </div>
-                  <h3 className="text-2xl sm:text-4xl font-serif font-extrabold text-white leading-tight">
-                    Access Off-Market Pre-Launch Allocations Before Public Release
-                  </h3>
-                  <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed">
-                    Gain direct access to developer inventory sheets, bulk purchase discounts, private floor plan allocations, and chauffeured airport pickups for international investors.
-                  </p>
-
-                  <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <div className="flex flex-col justify-end gap-3 lg:items-end">
                     <button
-                      onClick={() => handleOpenLeadModal('VIP Pre-Launch Allocation Pass')}
-                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 text-slate-950 font-bold text-xs sm:text-sm shadow-xl shadow-amber-500/25 hover:scale-102 transition-all flex items-center gap-2"
+                      onClick={() => handleOpenLeadModal('Pre-launch allocation list')}
+                      className="w-full sm:w-auto px-7 py-4 rounded-full bg-champagne hover:bg-amber-200 text-onyx text-sm font-medium tracking-wide transition-colors flex items-center justify-center gap-2"
                     >
                       <Download className="w-4 h-4" />
-                      <span>Request Pre-Launch Allocation Pack</span>
+                      Get the pre-launch list
                     </button>
-
                     <a
                       href="https://wa.me/971508392140?text=Hello%20PropEngine%20Specialist,%20I%20would%20like%20to%20receive%20the%20pre-launch%20off-market%20allocation%20pack%20for%20Dubai%20and%20Abu%20Dhabi."
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-5 py-3 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-300 font-semibold text-xs sm:text-sm transition-all flex items-center gap-2"
+                      className="w-full sm:w-auto px-7 py-4 rounded-full border border-slate-600 hover:border-emerald-400 text-slate-100 text-sm tracking-wide transition-colors flex items-center justify-center gap-2"
                     >
-                      <MessageSquare className="w-4 h-4" />
-                      <span>WhatsApp Direct Specialist</span>
+                      <MessageSquare className="w-4 h-4 text-emerald-300" />
+                      Ask on WhatsApp
                     </a>
                   </div>
                 </div>
@@ -440,11 +440,10 @@ export default function App() {
         {activeTab !== 'ai-assistant' && (
           <button
             onClick={() => setActiveTab('ai-assistant')}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-bold text-xs shadow-2xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition-all group"
+            className="flex items-center gap-2 h-12 px-5 rounded-full bg-gulf text-champagne text-sm ring-1 ring-champagne/40 shadow-[0_12px_30px_-8px_rgba(7,38,45,0.6)] hover:bg-gulf-deep transition-colors"
           >
-            <Sparkles className="w-4 h-4 animate-spin-slow" />
-            <span className="hidden sm:inline">Ask PropEngine AI</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <Sparkles className="w-4 h-4" />
+            <span className="hidden sm:inline">Ask the AI advisor</span>
           </button>
         )}
 
@@ -453,10 +452,11 @@ export default function App() {
           href="https://wa.me/971508392140?text=Hello%20PropEngine%20UAE%20Specialist,%20I%20am%20reviewing%20properties%20on%20your%20portal%20and%20would%20like%20immediate%20consultation."
           target="_blank"
           rel="noopener noreferrer"
-          className="w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center shadow-2xl shadow-emerald-500/40 hover:scale-110 active:scale-95 transition-all"
-          title="Connect with Senior Specialist on WhatsApp"
+          className="w-12 h-12 rounded-full bg-[#1f9d6b] hover:bg-[#188a5d] text-white flex items-center justify-center shadow-[0_12px_30px_-8px_rgba(15,112,80,0.6)] transition-colors"
+          title="WhatsApp a specialist"
+          aria-label="WhatsApp a specialist"
         >
-          <MessageSquare className="w-6 h-6 fill-current" />
+          <MessageSquare className="w-5 h-5" />
         </a>
       </div>
 

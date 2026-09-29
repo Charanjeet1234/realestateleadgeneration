@@ -29,6 +29,27 @@ interface AiSalesAssistantProps {
   onOpenLeadModal: (title?: string) => void;
 }
 
+/** Minimal inline markdown: **bold** and `code`. Returns React nodes (no HTML injection). */
+function renderInline(text: string): React.ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).filter(Boolean).map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return (
+        <strong key={i} className="font-semibold text-slate-50">
+          {part.slice(2, -2)}
+        </strong>
+      );
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return (
+        <code key={i} className="px-1 rounded bg-slate-800 text-[0.95em]">
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    return part;
+  });
+}
+
 export const AiSalesAssistant: React.FC<AiSalesAssistantProps> = ({
   initialPrompt,
   onClearInitialPrompt,
@@ -213,16 +234,16 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       {/* Header Info */}
-      <div className="bg-[#0b132b] border border-amber-500/30 rounded-2xl p-5 mb-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-slate-900 border border-amber-500/30 rounded-2xl p-5 mb-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 p-0.5 shadow-lg shadow-amber-500/20">
-            <div className="w-full h-full bg-[#080d1a] rounded-[10px] flex items-center justify-center">
+            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-amber-400" />
             </div>
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-serif font-extrabold text-white">
+              <h2 className="text-xl font-serif font-medium text-slate-50">
                 PropEngine AI Sales Specialist
               </h2>
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/40">
@@ -239,7 +260,7 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
         <div className="flex items-center gap-2 self-start md:self-auto">
           <button
             onClick={() => onOpenLeadModal('VIP Tailored Advisory Session')}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors shadow-md"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-onyx font-bold text-xs transition-colors shadow-md"
           >
             <PhoneCall className="w-3.5 h-3.5" />
             15-Min Agent Callback
@@ -257,7 +278,7 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
       </div>
 
       {/* Main Chat Interface */}
-      <div className="bg-[#080d1a] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[650px]">
+      <div className="bg-slate-950 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[650px]">
         {/* Messages Stream */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
           {messages.map((m) => {
@@ -276,32 +297,34 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
                 <div
                   className={`max-w-[88%] sm:max-w-[78%] rounded-2xl p-4 sm:p-5 text-xs sm:text-sm leading-relaxed ${
                     isAssistant
-                      ? 'bg-[#0f172a] text-slate-200 border border-slate-800/80 shadow-md'
-                      : 'bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-950 font-medium shadow-md ml-auto'
+                      ? 'bg-slate-900 text-slate-200 border border-slate-800/80 shadow-md'
+                      : 'bg-gulf text-alabaster shadow-md ml-auto'
                   }`}
                 >
                   {/* Markdown-style content rendering */}
                   <div className="space-y-2 whitespace-pre-wrap selection:bg-amber-400/40">
-                    {m.content.split('\n').map((line, idx) => {
+                    {m.content.split('\n').map((rawLine, idx) => {
+                      const indented = /^\s{2,}[*-]\s/.test(rawLine);
+                      const line = rawLine.trimStart();
                       if (line.startsWith('### ')) {
                         return (
-                          <h4 key={idx} className="font-serif font-bold text-amber-300 text-sm sm:text-base mt-2 mb-1">
-                            {line.replace('### ', '')}
+                          <h4 key={idx} className="font-serif font-semibold text-amber-300 text-sm sm:text-base mt-2 mb-1">
+                            {renderInline(line.replace('### ', ''))}
                           </h4>
                         );
                       }
                       if (line.startsWith('* ') || line.startsWith('- ')) {
                         return (
-                          <div key={idx} className="flex items-start gap-1.5 ml-1 my-0.5">
-                            <span className="text-amber-400 mt-1 font-bold">•</span>
-                            <span>{line.replace(/^[*-]\s/, '')}</span>
+                          <div key={idx} className={`flex items-start gap-1.5 my-0.5 ${indented ? 'ml-5' : 'ml-1'}`}>
+                            <span className="text-amber-400 mt-1 font-bold">{indented ? '–' : '•'}</span>
+                            <span>{renderInline(line.replace(/^[*-]\s/, ''))}</span>
                           </div>
                         );
                       }
                       if (line.startsWith('---')) {
                         return <hr key={idx} className="border-slate-800 my-2" />;
                       }
-                      return <p key={idx}>{line}</p>;
+                      return <p key={idx}>{renderInline(line)}</p>;
                     })}
                   </div>
 
@@ -309,7 +332,7 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
                     className={`text-[10px] mt-2 pt-2 border-t flex items-center justify-between ${
                       isAssistant
                         ? 'border-slate-800 text-slate-400'
-                        : 'border-amber-600/30 text-slate-800'
+                        : 'border-champagne/20 text-champagne/70'
                     }`}
                   >
                     <span>{m.timestamp}</span>
@@ -336,7 +359,7 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
               <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0">
                 <Building2 className="w-4 h-4 text-amber-400 animate-bounce" />
               </div>
-              <div className="bg-[#0f172a] border border-slate-800 rounded-2xl p-4 text-xs text-slate-400 flex items-center gap-2">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-xs text-slate-400 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
                 <span>PropEngine AI is analyzing DLD transaction metrics & payment plans...</span>
               </div>
@@ -345,10 +368,10 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
 
           {/* Inline Instant Lead Capture Funnel Box */}
           {!leadSubmitted && messages.length > 2 && (
-            <div className="bg-gradient-to-r from-[#132042] via-[#0b132b] to-[#132042] border border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-2xl my-4">
+            <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-900 border border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-2xl my-4">
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles className="w-4 h-4 text-amber-400" />
-                <h4 className="font-serif font-bold text-white text-sm">
+                <h4 className="font-serif font-semibold text-slate-50 text-sm">
                   Receive Official Floor Plans, Payment Schedules & DLD Report
                 </h4>
               </div>
@@ -364,7 +387,7 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
                     placeholder="Full Name *"
                     value={leadForm.name}
                     onChange={(e) => setLeadForm({ ...leadForm, name: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <div>
@@ -374,7 +397,7 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
                     placeholder="WhatsApp / Phone (with code) *"
                     value={leadForm.phone}
                     onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <div>
@@ -384,14 +407,14 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
                     placeholder="Corporate / Personal Email *"
                     value={leadForm.email}
                     onChange={(e) => setLeadForm({ ...leadForm, email: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400"
                   />
                 </div>
                 <div>
                   <button
                     type="submit"
                     disabled={leadSubmitting}
-                    className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 text-onyx font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
                   >
                     {leadSubmitting ? (
                       <span>Transmitting...</span>
@@ -411,7 +434,7 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
         </div>
 
         {/* Input Bar */}
-        <div className="p-3 sm:p-4 bg-[#0b132b] border-t border-slate-800">
+        <div className="p-3 sm:p-4 bg-slate-900 border-t border-slate-800">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -425,13 +448,13 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask about yields, communities, Danube 1% plan, Emaar payment plans, DLD fees..."
               disabled={isLoading}
-              className="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+              className="flex-1 px-4 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
             />
 
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 text-slate-950 font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-102 shrink-0"
+              className="p-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 text-onyx font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-102 shrink-0"
             >
               <Send className="w-4 h-4" />
             </button>
@@ -442,19 +465,19 @@ A dedicated senior broker will reach out within **15 minutes**. For instant prio
             <span className="shrink-0 text-slate-500">Quick prompts:</span>
             <button
               onClick={() => handleSend('Compare rental yield in JVC vs Downtown Dubai for 1BR apartments.')}
-              className="shrink-0 px-2.5 py-0.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700/60"
+              className="shrink-0 px-2.5 py-0.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-slate-50 transition-colors border border-slate-700/60"
             >
               JVC vs Downtown 1BR Yields
             </button>
             <button
               onClick={() => handleSend('What are the payment plan options for Aldar Saadiyat Lagoons in Abu Dhabi?')}
-              className="shrink-0 px-2.5 py-0.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700/60"
+              className="shrink-0 px-2.5 py-0.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-slate-50 transition-colors border border-slate-700/60"
             >
               Aldar Saadiyat Payment Plan
             </button>
             <button
               onClick={() => handleSend('Calculate total government and agency closing costs on an AED 2,000,000 ready property in Dubai.')}
-              className="shrink-0 px-2.5 py-0.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors border border-slate-700/60"
+              className="shrink-0 px-2.5 py-0.5 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-slate-50 transition-colors border border-slate-700/60"
             >
               AED 2M DLD + Agency Breakdown
             </button>

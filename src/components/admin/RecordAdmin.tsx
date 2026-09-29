@@ -100,7 +100,7 @@ export function RecordAdmin<T extends { id: string }>({ collection, singular, fi
         </Button>
       </div>
       <ErrorNote message={error} />
-      <div className="bg-[#0b132b] border border-slate-800 rounded-2xl overflow-x-auto">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
         <table className="w-full text-xs min-w-[640px]">
           <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider">
             <tr>

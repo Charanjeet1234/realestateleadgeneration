@@ -44,7 +44,7 @@ export const DeveloperDirectory: React.FC<DeveloperDirectoryProps> = ({
             <Building2 className="w-3.5 h-3.5" />
             Institutional UAE Master Developer Index
           </div>
-          <h2 className="text-2xl sm:text-4xl font-serif font-extrabold text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-serif font-medium text-slate-50 tracking-tight">
             Developer Track Records & Payment Structures
           </h2>
           <p className="text-sm text-slate-400 mt-1 max-w-2xl">
@@ -54,7 +54,7 @@ export const DeveloperDirectory: React.FC<DeveloperDirectoryProps> = ({
 
         <button
           onClick={() => onOpenLeadModal('Off-Market Master Developer Inventory & Allocation Sheet')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 hover:scale-102 transition-all self-start md:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-onyx text-xs font-bold shadow-lg shadow-amber-500/20 hover:scale-102 transition-all self-start md:self-auto"
         >
           <Download className="w-3.5 h-3.5" />
           Request Exclusive Allocation Sheets
@@ -67,8 +67,8 @@ export const DeveloperDirectory: React.FC<DeveloperDirectoryProps> = ({
           onClick={() => setActiveEmirate('ALL')}
           className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
             activeEmirate === 'ALL'
-              ? 'bg-amber-500 text-slate-950 font-bold'
-              : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+              ? 'bg-amber-500 text-onyx font-bold'
+              : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-50'
           }`}
         >
           All Key Developers ({DEVELOPERS_DATABASE.length})
@@ -77,8 +77,8 @@ export const DeveloperDirectory: React.FC<DeveloperDirectoryProps> = ({
           onClick={() => setActiveEmirate('Dubai')}
           className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
             activeEmirate === 'Dubai'
-              ? 'bg-amber-500 text-slate-950 font-bold'
-              : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+              ? 'bg-amber-500 text-onyx font-bold'
+              : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-50'
           }`}
         >
           Dubai Flagships ({DUBAI_DEVELOPERS.length})
@@ -87,8 +87,8 @@ export const DeveloperDirectory: React.FC<DeveloperDirectoryProps> = ({
           onClick={() => setActiveEmirate('Abu Dhabi')}
           className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
             activeEmirate === 'Abu Dhabi'
-              ? 'bg-amber-500 text-slate-950 font-bold'
-              : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-white'
+              ? 'bg-amber-500 text-onyx font-bold'
+              : 'bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-50'
           }`}
         >
           Abu Dhabi Sovereign Leaders ({ABU_DHABI_DEVELOPERS.length})
@@ -100,7 +100,7 @@ export const DeveloperDirectory: React.FC<DeveloperDirectoryProps> = ({
         {filteredDevelopers.map((dev) => (
           <div
             key={dev.name}
-            className="bg-[#0b132b] border border-slate-800 hover:border-amber-500/40 rounded-2xl p-5 shadow-xl transition-all duration-300 flex flex-col justify-between group"
+            className="bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-5 shadow-xl transition-all duration-300 flex flex-col justify-between group"
           >
             <div>
               {/* Header */}
@@ -113,7 +113,7 @@ export const DeveloperDirectory: React.FC<DeveloperDirectoryProps> = ({
                 </span>
               </div>
 
-              <h3 className="text-lg font-serif font-bold text-white group-hover:text-amber-300 transition-colors">
+              <h3 className="text-lg font-serif font-semibold text-slate-50 group-hover:text-amber-300 transition-colors">
                 {dev.name}
               </h3>
               <p className="text-xs text-slate-400 mt-1.5 line-clamp-3 leading-relaxed">
@@ -172,7 +172,7 @@ export const DeveloperDirectory: React.FC<DeveloperDirectoryProps> = ({
             <div className="mt-5 pt-3 border-t border-slate-800 space-y-2">
               <button
                 onClick={() => onSelectDeveloper(dev.name)}
-                className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-amber-500 hover:text-slate-950 text-slate-200 text-xs font-bold transition-all text-center"
+                className="w-full py-2 px-3 rounded-xl bg-slate-800 hover:bg-amber-500 hover:text-onyx text-slate-200 text-xs font-bold transition-all text-center"
               >
                 View Available Listings
               </button>

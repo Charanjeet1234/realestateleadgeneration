@@ -106,11 +106,11 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-lg bg-[#0b132b] border border-amber-500/40 rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-7">
+      <div className="relative w-full max-w-lg bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl overflow-hidden p-6 sm:p-7">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-slate-50 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -121,7 +121,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
               <CheckCircle2 className="w-8 h-8 text-emerald-400" />
             </div>
 
-            <h3 className="text-2xl font-serif font-bold text-white">
+            <h3 className="text-2xl font-serif font-semibold text-slate-50">
               VIP Request Confirmed
             </h3>
 
@@ -142,7 +142,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all"
+                className="inline-flex items-center gap-2 py-2.5 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-slate-50 font-bold text-xs shadow-lg transition-all"
               >
                 Instant WhatsApp Fast Connect
               </a>
@@ -163,7 +163,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
               15-Minute Guaranteed Broker Follow-Up
             </div>
 
-            <h3 className="text-xl sm:text-2xl font-serif font-bold text-white leading-snug">
+            <h3 className="text-xl sm:text-2xl font-serif font-semibold text-slate-50 leading-snug">
               Unlock VIP Brochure & Master Floor Plans
             </h3>
 
@@ -188,7 +188,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
                   placeholder="e.g. Jonathan Edwards"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                  className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400"
                 />
               </div>
 
@@ -203,7 +203,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
                     placeholder="+971 50 123 4567"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400 font-mono"
                   />
                 </div>
 
@@ -217,7 +217,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
                     placeholder="investor@domain.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400"
                   />
                 </div>
               </div>
@@ -230,7 +230,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
                   <select
                     value={formData.preferredLocation}
                     onChange={(e) => setFormData({ ...formData, preferredLocation: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-50 focus:outline-none focus:border-amber-400"
                   >
                     {ALL_COMMUNITIES.map((c) => (
                       <option key={c} value={c}>
@@ -247,7 +247,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
                   <select
                     value={formData.budget}
                     onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-white focus:outline-none focus:border-amber-400"
+                    className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700/80 rounded-xl text-slate-50 focus:outline-none focus:border-amber-400"
                   >
                     <option value="Under AED 1,000,000">Under AED 1.0M</option>
                     <option value="AED 1,000,000 – 2,000,000">AED 1.0M – 2.0M</option>
@@ -307,7 +307,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-101"
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 text-onyx font-extrabold text-xs sm:text-sm shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50 hover:scale-101"
                 >
                   {isSubmitting ? (
                     <span>Dispatched to Specialist Queue...</span>

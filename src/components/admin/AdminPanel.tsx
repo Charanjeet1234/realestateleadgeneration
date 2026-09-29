@@ -55,7 +55,7 @@ export const AdminPanel: React.FC = () => {
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <h2 className="text-2xl sm:text-3xl font-serif font-extrabold text-white tracking-tight">Admin</h2>
+      <h2 className="text-2xl sm:text-3xl font-serif font-medium text-slate-50 tracking-tight">Admin</h2>
       <p className="text-sm text-slate-400 mt-1 mb-5">Changes go live on the public site immediately.</p>
 
       <div className="flex gap-1.5 overflow-x-auto mb-5 no-scrollbar">
@@ -64,7 +64,7 @@ export const AdminPanel: React.FC = () => {
             key={k}
             onClick={() => setSection(k)}
             className={`inline-flex items-center gap-1.5 whitespace-nowrap px-3.5 py-2 rounded-lg text-xs font-semibold border ${
-              section === k ? 'bg-amber-500 text-slate-950 border-amber-500' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+              section === k ? 'bg-amber-500 text-onyx border-amber-500' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-50'
             }`}
           >
             {icon}
@@ -82,7 +82,7 @@ export const AdminPanel: React.FC = () => {
           titleOf={(d) => d.name}
           onDataChanged={reload}
           columns={[
-            { label: 'Developer', render: (d) => <span className="font-bold text-white">{d.name}</span> },
+            { label: 'Developer', render: (d) => <span className="font-bold text-slate-50">{d.name}</span> },
             { label: 'Emirate', render: (d) => d.emirate },
             { label: 'Projects', render: (d) => `${d.completedProjects} done · ${d.activeProjects} active` },
             { label: 'On-time', render: (d) => d.onTimeDeliveryRate },
@@ -97,7 +97,7 @@ export const AdminPanel: React.FC = () => {
           titleOf={(b) => b.community}
           onDataChanged={reload}
           columns={[
-            { label: 'Community', render: (b) => <span className="font-bold text-white">{b.community}</span> },
+            { label: 'Community', render: (b) => <span className="font-bold text-slate-50">{b.community}</span> },
             { label: 'Emirate', render: (b) => b.emirate },
             { label: '1BR rent', render: (b) => b.oneBedRentAED },
             { label: 'Yield', render: (b) => b.avgYield },

@@ -1,32 +1,232 @@
 @import "tailwindcss";
+@import "@fontsource-variable/bodoni-moda/opsz.css";
+@import "@fontsource-variable/jost/index.css";
+
+/*
+ * PropEngine design system — "Gulf & Travertine"
+ *
+ * Inspired by Dubai waterfront residences: travertine and alabaster stone
+ * interiors, brushed-brass fittings, and the deep teal of the Arabian Gulf at dusk.
+ *
+ * Components use Tailwind's slate / amber / … class names; those palettes are
+ * remapped below to CSS variables, so each surface flips between the light
+ * "travertine" theme (default) and the dark "Gulf night" theme (`.theme-dark`)
+ * without touching markup.
+ *
+ *   slate-50 … slate-300  text (strongest → body)
+ *   slate-400 … slate-600 muted text / icons
+ *   slate-700 / 800       borders, chips, hover fills
+ *   slate-900             raised surfaces (cards, inputs)
+ *   slate-950             page / section background
+ *   amber-*               brass & champagne accent
+ */
+
+@theme inline {
+  --font-sans: 'Jost Variable', 'Jost', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Bodoni Moda Variable', 'Bodoni Moda', 'Didot', Georgia, serif;
+
+  --color-slate-50: var(--pe-slate-50);
+  --color-slate-100: var(--pe-slate-100);
+  --color-slate-200: var(--pe-slate-200);
+  --color-slate-300: var(--pe-slate-300);
+  --color-slate-400: var(--pe-slate-400);
+  --color-slate-500: var(--pe-slate-500);
+  --color-slate-600: var(--pe-slate-600);
+  --color-slate-700: var(--pe-slate-700);
+  --color-slate-800: var(--pe-slate-800);
+  --color-slate-900: var(--pe-slate-900);
+  --color-slate-950: var(--pe-slate-950);
+
+  --color-amber-50: var(--pe-amber-50);
+  --color-amber-100: var(--pe-amber-100);
+  --color-amber-200: var(--pe-amber-200);
+  --color-amber-300: var(--pe-amber-300);
+  --color-amber-400: var(--pe-amber-400);
+  --color-amber-500: var(--pe-amber-500);
+  --color-amber-600: var(--pe-amber-600);
+  --color-amber-700: var(--pe-amber-700);
+
+  --color-yellow-200: var(--pe-yellow-200);
+  --color-yellow-300: var(--pe-yellow-300);
+  --color-yellow-400: var(--pe-yellow-400);
+
+  --color-emerald-300: var(--pe-emerald-300);
+  --color-emerald-400: var(--pe-emerald-400);
+  --color-emerald-500: var(--pe-emerald-500);
+  --color-emerald-600: var(--pe-emerald-600);
+
+  --color-rose-300: var(--pe-rose-300);
+  --color-rose-400: var(--pe-rose-400);
+  --color-sky-300: var(--pe-sky-300);
+  --color-sky-400: var(--pe-sky-400);
+  --color-violet-300: var(--pe-violet-300);
+  --color-violet-400: var(--pe-violet-400);
+  --color-indigo-300: var(--pe-indigo-300);
+  --color-orange-300: var(--pe-orange-300);
+
+  /* Fixed brand colours (same in both themes) */
+  --color-onyx: #17140f;
+  --color-gulf: #07262d;
+  --color-gulf-deep: #0e3139;
+  --color-lagoon: #1f6f78;
+  --color-brass: #b8904f;
+  --color-champagne: #e2c792;
+  --color-travertine: #f2ece3;
+  --color-alabaster: #fbf8f3;
+}
+
+/* ── Light · Travertine (default; .theme-light re-applies it inside a dark section) ── */
+:root,
+.theme-light {
+  color-scheme: light;
+  --pe-slate-50: #17140f;
+  --pe-slate-100: #1f1b16;
+  --pe-slate-200: #2b261f;
+  --pe-slate-300: #3f382e;
+  --pe-slate-400: #6b6154;
+  --pe-slate-500: #857a6b;
+  --pe-slate-600: #a49988;
+  --pe-slate-700: #d5c9b5;
+  --pe-slate-800: #e5dbcb;
+  --pe-slate-900: #fbf8f3;
+  --pe-slate-950: #f2ece3;
+
+  --pe-amber-50: #fbf4e6;
+  --pe-amber-100: #f3e4c6;
+  --pe-amber-200: #7d5a22;
+  --pe-amber-300: #876229;
+  --pe-amber-400: #9a7433;
+  --pe-amber-500: #b8904f;
+  --pe-amber-600: #9c7535;
+  --pe-amber-700: #7e5c27;
+
+  --pe-yellow-200: #a07a3a;
+  --pe-yellow-300: #b08a48;
+  --pe-yellow-400: #c9a45e;
+
+  --pe-emerald-300: #0d7050;
+  --pe-emerald-400: #0f7d5a;
+  --pe-emerald-500: #169b6d;
+  --pe-emerald-600: #0d7050;
+
+  --pe-rose-300: #b0263e;
+  --pe-rose-400: #c0344c;
+  --pe-sky-300: #0b6386;
+  --pe-sky-400: #0d759e;
+  --pe-violet-300: #6a3dbb;
+  --pe-violet-400: #7a4cce;
+  --pe-indigo-300: #3d49b3;
+  --pe-orange-300: #a8520f;
+}
+
+/* ── Dark · Gulf night ── */
+.theme-dark {
+  color-scheme: dark;
+  --pe-slate-50: #fffdf8;
+  --pe-slate-100: #f6f1e7;
+  --pe-slate-200: #ebe4d6;
+  --pe-slate-300: #d3cab9;
+  --pe-slate-400: #a9b5b0;
+  --pe-slate-500: #83948f;
+  --pe-slate-600: #5d716f;
+  --pe-slate-700: #2d4b51;
+  --pe-slate-800: #1d3c43;
+  --pe-slate-900: #0e3139;
+  --pe-slate-950: #07262d;
+
+  --pe-amber-50: #fbf4e6;
+  --pe-amber-100: #f6e8cc;
+  --pe-amber-200: #f1ddb2;
+  --pe-amber-300: #e7cb92;
+  --pe-amber-400: #dcb877;
+  --pe-amber-500: #c9a15c;
+  --pe-amber-600: #a98243;
+  --pe-amber-700: #8a6932;
+
+  --pe-yellow-200: #f6e7c4;
+  --pe-yellow-300: #efd9a6;
+  --pe-yellow-400: #e2c58b;
+
+  --pe-emerald-300: #7fe0bb;
+  --pe-emerald-400: #3fcf9b;
+  --pe-emerald-500: #16b681;
+  --pe-emerald-600: #0f9467;
+
+  --pe-rose-300: #fda4af;
+  --pe-rose-400: #fb7185;
+  --pe-sky-300: #7dd3fc;
+  --pe-sky-400: #38bdf8;
+  --pe-violet-300: #c4b5fd;
+  --pe-violet-400: #a78bfa;
+  --pe-indigo-300: #a5b4fc;
+  --pe-orange-300: #fdba74;
+}
 
 @layer base {
+  html {
+    background: var(--pe-slate-950);
+  }
+
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans);
+    font-size: 15px;
+    letter-spacing: 0.005em;
+    -webkit-font-smoothing: antialiased;
   }
 
-  h1, h2, h3, .font-serif {
-    font-family: 'Cinzel', serif, Georgia;
+  h1,
+  h2,
+  h3,
+  .font-serif {
+    font-family: var(--font-serif);
+    font-optical-sizing: auto;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-brass) 35%, transparent);
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brass);
+    outline-offset: 2px;
+  }
+
+  input,
+  select,
+  textarea {
+    color-scheme: inherit;
   }
 }
 
-/* Custom subtle scrollbar */
+/* Brass hairline used under section titles and on the hero */
+.brass-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-brass) 20%, var(--color-champagne) 50%, var(--color-brass) 80%, transparent);
+}
+
+/* Subtle travertine grain for light sections */
+.stone-texture {
+  background-image:
+    radial-gradient(circle at 20% 0%, rgb(255 255 255 / 0.7), transparent 40%),
+    radial-gradient(circle at 90% 30%, rgb(184 144 79 / 0.06), transparent 35%);
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #080d1a;
+  background: var(--pe-slate-950);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 4px;
+  background: var(--pe-slate-700);
+  border-radius: 8px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #d4af37;
+  background: var(--color-brass);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -45,7 +245,6 @@
     transform: rotate(360deg);
   }
 }
-
 .animate-spin-slow {
   animation: spinSlow 8s linear infinite;
 }
@@ -60,7 +259,34 @@
     transform: scale(1);
   }
 }
-
 .animate-fade-in {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hero entrance — the one orchestrated motion moment on the page */
+@keyframes heroRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.hero-rise {
+  animation: heroRise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.hero-rise-delay {
+  animation: heroRise 0.9s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

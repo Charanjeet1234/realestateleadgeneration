@@ -27,13 +27,13 @@ export const LoginPanel: React.FC = () => {
     <div className="py-16 px-4">
       <form
         onSubmit={submit}
-        className="max-w-sm mx-auto bg-[#0b132b] border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl"
+        className="max-w-sm mx-auto bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 shadow-2xl"
       >
         <div className="text-center space-y-2">
           <div className="w-12 h-12 mx-auto rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
             <Lock className="w-5 h-5 text-amber-400" />
           </div>
-          <h2 className="text-xl font-serif font-bold text-white">Agent sign-in</h2>
+          <h2 className="text-xl font-serif font-semibold text-slate-50">Agent sign-in</h2>
           <p className="text-xs text-slate-400">Broker CRM and listings admin for agency staff.</p>
         </div>
         <ErrorNote message={error} />

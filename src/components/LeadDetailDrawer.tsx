@@ -311,7 +311,7 @@ export const LeadDetailDrawer: React.FC<Props> = ({ leadId, team, onClose, onCha
                   key={v}
                   onClick={() => setNoteType(v)}
                   className={`px-2.5 py-1 rounded-md text-[11px] font-semibold border ${
-                    noteType === v ? 'bg-amber-500 text-slate-950 border-amber-500' : 'border-slate-700 text-slate-400 hover:text-white'
+                    noteType === v ? 'bg-amber-500 text-onyx border-amber-500' : 'border-slate-700 text-slate-400 hover:text-slate-50'
                   }`}
                 >
                   {l}

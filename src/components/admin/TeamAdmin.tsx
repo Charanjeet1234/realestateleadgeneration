@@ -45,7 +45,7 @@ export const TeamAdmin: React.FC = () => {
         </Button>
       </div>
       <ErrorNote message={error} />
-      <div className="bg-[#0b132b] border border-slate-800 rounded-2xl overflow-x-auto">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
         <table className="w-full text-xs min-w-[720px]">
           <thead className="bg-slate-950 text-slate-400 uppercase text-[10px] tracking-wider">
             <tr>
@@ -61,7 +61,7 @@ export const TeamAdmin: React.FC = () => {
             {users.map((u) => (
               <tr key={u.id} className={u.active ? '' : 'opacity-50'}>
                 <td className="py-3 px-4">
-                  <div className="font-bold text-white">
+                  <div className="font-bold text-slate-50">
                     {u.name} {u.id === me?.id && <span className="text-[10px] text-amber-300 font-normal">(you)</span>}
                   </div>
                   <div className="text-[10px] text-slate-400">{u.email}</div>

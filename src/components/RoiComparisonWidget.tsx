@@ -198,7 +198,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 via-[#0d1633] to-[#070d1e] border-2 border-amber-500/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden mb-10">
+    <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 border-2 border-amber-500/40 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden mb-10">
       {/* Decorative ambient background */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
@@ -210,7 +210,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
             <Calculator className="w-3.5 h-3.5 text-amber-400" />
             Interactive Yield Engine
           </div>
-          <h3 className="text-xl sm:text-2xl font-serif font-bold text-white tracking-tight flex items-center gap-2.5">
+          <h3 className="text-xl sm:text-2xl font-serif font-semibold text-slate-50 tracking-tight flex items-center gap-2.5">
             Real-Time ROI & Net Yield Stress Tester
           </h3>
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
@@ -234,7 +234,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
                 `Institutional Yield & Cash Flow Audit (${currentPreset.community} - ${unitType})`
               )
             }
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 text-xs font-bold shadow-lg shadow-amber-500/20 hover:scale-102 transition-transform"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-onyx text-xs font-bold shadow-lg shadow-amber-500/20 hover:scale-102 transition-transform"
           >
             <Sparkles className="w-3.5 h-3.5" />
             Request Full Financial Model PDF
@@ -256,7 +256,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
                 onClick={() => handleSelectPreset(idx)}
                 className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
                   isSelected
-                    ? 'bg-amber-500/20 border-amber-400 text-white shadow-md shadow-amber-500/10'
+                    ? 'bg-amber-500/20 border-amber-400 text-slate-50 shadow-md shadow-amber-500/10'
                     : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                 }`}
               >
@@ -264,7 +264,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
                   <span className="text-[10px] block font-semibold text-amber-400/90 truncate">
                     {preset.emirate}
                   </span>
-                  <p className="text-xs font-bold truncate text-white">{preset.community.split('(')[0]}</p>
+                  <p className="text-xs font-bold truncate text-slate-50">{preset.community.split('(')[0]}</p>
                 </div>
                 <div className="mt-2 flex items-center justify-between text-[10px] text-slate-300">
                   <span className="truncate">{preset.unitType}</span>
@@ -286,7 +286,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
               Adjust Property Financial Inputs
             </span>
             <span className="text-[11px] text-slate-400">
-              Community: <strong className="text-white">{currentPreset.community}</strong>
+              Community: <strong className="text-slate-50">{currentPreset.community}</strong>
             </span>
           </div>
 
@@ -303,8 +303,8 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
                     onClick={() => setUnitType(type)}
                     className={`py-1.5 px-2 rounded-lg text-xs font-medium transition-all text-center truncate ${
                       unitType === type
-                        ? 'bg-amber-500 text-slate-950 font-bold shadow'
-                        : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                        ? 'bg-amber-500 text-onyx font-bold shadow'
+                        : 'bg-slate-900 text-slate-400 hover:text-slate-50 border border-slate-800'
                     }`}
                   >
                     {type}
@@ -454,7 +454,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
         {/* Right Column: Live Yield Cards & Cash Flow Output (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
           {/* Main Net Yield Hero Card */}
-          <div className="bg-gradient-to-br from-[#0c1e38] to-[#081226] border-2 border-emerald-500/40 rounded-2xl p-5 shadow-xl">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-950 border-2 border-emerald-500/40 rounded-2xl p-5 shadow-xl">
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1.5">
                 <TrendingUp className="w-4 h-4 text-emerald-400" />
@@ -466,7 +466,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
             </div>
 
             <div className="flex items-baseline gap-3 my-2">
-              <span className="text-4xl sm:text-5xl font-mono font-extrabold text-white tracking-tight">
+              <span className="text-4xl sm:text-5xl font-mono font-extrabold text-slate-50 tracking-tight">
                 {metrics.netYield.toFixed(2)}%
               </span>
               <span className="text-xs text-slate-300">
@@ -503,7 +503,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
 
             <div className="flex justify-between items-center text-slate-300">
               <span>Gross Rental Income:</span>
-              <span className="font-mono font-bold text-white">+AED {annualRent.toLocaleString()}</span>
+              <span className="font-mono font-bold text-slate-50">+AED {annualRent.toLocaleString()}</span>
             </div>
 
             <div className="flex justify-between items-center text-rose-300/90">
@@ -537,7 +537,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
             </div>
             <p className="text-[10px] text-slate-400 leading-tight">
               Includes {currentPreset.emirate === 'Dubai' ? '4% DLD + AED 4,200 admin' : '2% DMT registration'} + statutory 2% RERA brokerage (+ 5% VAT). Yield on total deployed equity:{' '}
-              <strong className="text-white font-mono">{metrics.allInNetYield.toFixed(2)}% net</strong>.
+              <strong className="text-slate-50 font-mono">{metrics.allInNetYield.toFixed(2)}% net</strong>.
             </p>
           </div>
 
@@ -549,7 +549,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
                   `As PropEngine UAE, analyze my simulated property scenario in ${currentPreset.community} for a ${unitType} priced at AED ${propertyPrice.toLocaleString()} with annual rent AED ${annualRent.toLocaleString()} and service charges AED ${serviceChargePerSqft}/sqft (Net yield: ${metrics.netYield.toFixed(2)}%). Is this realistic compared to current 2026 DLD transaction benchmarks, and how does it compare to other communities?`
                 )
               }
-              className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-white flex items-center justify-center gap-1.5 transition-colors"
+              className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-50 flex items-center justify-center gap-1.5 transition-colors"
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               Ask AI to Audit Scenario
@@ -560,7 +560,7 @@ export const RoiComparisonWidget: React.FC<RoiComparisonWidgetProps> = ({
                   `VIP Consultation: ${currentPreset.community} ${unitType} Portfolio`
                 )
               }
-              className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-colors flex items-center gap-1"
+              className="py-2 px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-onyx text-xs font-bold transition-colors flex items-center gap-1"
             >
               <span>Get Units</span>
               <ArrowRight className="w-3 h-3" />

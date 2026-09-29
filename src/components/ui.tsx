@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
 export const inputCls =
-  'w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 disabled:opacity-50';
+  'w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-50 placeholder-slate-500 focus:outline-none focus:border-amber-400 disabled:opacity-50';
 export const labelCls = 'block text-[11px] font-semibold text-slate-400 mb-1';
 
 export function Field({
@@ -27,7 +27,7 @@ export function Field({
 
 type BtnVariant = 'primary' | 'ghost' | 'danger' | 'success';
 const btnVariants: Record<BtnVariant, string> = {
-  primary: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold',
+  primary: 'bg-amber-500 hover:bg-amber-400 text-onyx font-bold',
   ghost: 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold',
   danger: 'bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 font-semibold',
   success: 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/40 font-semibold',
@@ -85,13 +85,13 @@ export function Modal({
         aria-modal="true"
         className={
           side
-            ? 'w-full max-w-xl h-full bg-[#0b132b] border-l border-slate-800 shadow-2xl flex flex-col'
-            : `w-full ${wide ? 'max-w-4xl' : 'max-w-lg'} my-8 bg-[#0b132b] border border-slate-800 rounded-2xl shadow-2xl`
+            ? 'w-full max-w-xl h-full bg-slate-900 border-l border-slate-800 shadow-2xl flex flex-col'
+            : `w-full ${wide ? 'max-w-4xl' : 'max-w-lg'} my-8 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl`
         }
       >
         <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-slate-800 shrink-0">
-          <h3 className="text-base font-serif font-bold text-white truncate">{title}</h3>
-          <button onClick={onClose} className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white" aria-label="Close">
+          <h3 className="text-base font-serif font-semibold text-slate-50 truncate">{title}</h3>
+          <button onClick={onClose} className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-slate-50" aria-label="Close">
             <X className="w-4 h-4" />
           </button>
         </div>
