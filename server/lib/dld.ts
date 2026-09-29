@@ -191,6 +191,7 @@ function mapSale(row: Row, day: Date): Prisma.DldSaleCreateManyInput | null {
     areaKey: area,
     masterKey: areaKey(pick(row, 'MASTER_PROJECT_EN')) || null,
     project: pick(row, 'PROJECT_EN'),
+    projectKey: areaKey(pick(row, 'PROJECT_EN')) || null,
     isOffplan: /off|^1$|^true$/i.test(offplan) || /pre.?reg/i.test(procedure),
     rooms: parseRooms(pick(row, 'ROOMS_EN', 'ROOMS')),
     isVilla: isVillaRow(row),
@@ -385,80 +386,125 @@ async function runDailyJob(job: DailyJob, deadline: number) {
 
 // ───────────────────────── projects ─────────────────────────
 
+const PROJECT_HISTORY_FROM_YEAR = 2002; // freehold ownership for expatriates began in Dubai in 2002
+
+const projectName = (r: Row) => pick(r, 'PROJECT_EN', 'PROJECT_NAME_EN', 'PROJECT_NAME', 'PROJECT_NAME_E');
+const projectDeveloper = (r: Row) => pick(r, 'DEVELOPER_EN', 'DEVELOPER_NAME_EN', 'DEVELOPER_NAME', 'MASTER_DEVELOPER_EN');
+
+async function fetchProjectsWindow(from: Date, to: Date, dateType: string, deadline: number) {
+  return fetchAll(
+    'projects',
+    {
+      P_FROM_DATE: dldDate(from),
+      P_TO_DATE: dldDate(to),
+      P_DATE_TYPE: dateType, // 1 = start date, 3 = adoption (registration) date
+      P_PRJ_TYPE_ID: '',
+      P_PRJ_STATUS: '',
+      P_ZONE_ID: '',
+      P_AREA_ID: '',
+    },
+    deadline,
+  );
+}
+
+/** Insert new projects / refresh existing ones. Returns counts. */
+async function upsertProjects(rows: Row[]) {
+  const seen = new Map<string, Row>();
+  for (const r of rows) {
+    const name = projectName(r);
+    if (!name) continue;
+    const key = pick(r, 'PROJECT_ID', 'PROJECT_NUMBER') ?? `${areaKey(name)}|${areaKey(projectDeveloper(r))}`;
+    seen.set(key, r);
+  }
+  let created = 0;
+  let updated = 0;
+  const now = new Date();
+  const existing = new Set(
+    (await prisma.dldProject.findMany({ where: { dldKey: { in: [...seen.keys()] } }, select: { dldKey: true } })).map((p) => p.dldKey),
+  );
+  for (const [dldKey, r] of seen) {
+    const name = projectName(r)!;
+    const status = pick(r, 'PROJECT_STATUS', 'PROJECT_STATUS_EN', 'STATUS_EN', 'STATUS');
+    const completionDate = parseDldDate(pick(r, 'PROJECT_END_DATE', 'END_DATE', 'COMPLETION_DATE'));
+    const units = num(pick(r, 'NO_OF_UNITS', 'UNITS', 'NUMBER_OF_UNITS', 'CNT_UNIT'));
+    const fields = {
+      name,
+      nameKey: areaKey(name),
+      developer: projectDeveloper(r),
+      area: pick(r, 'AREA_EN', 'AREA_NAME_EN', 'AREA_NAME'),
+      status,
+      startDate: parseDldDate(pick(r, 'PROJECT_START_DATE', 'START_DATE')),
+      completionDate,
+      percentComplete: num(pick(r, 'PERCENT_COMPLETED', 'PERCENTAGE_COMPLETED', 'COMPLETION_PERCENTAGE', 'PERCENT_COMPLETE')),
+      units: units === null ? null : Math.round(units),
+      raw: r as Prisma.InputJsonValue,
+      lastSeenAt: now,
+    };
+    if (existing.has(dldKey)) {
+      await prisma.dldProject.update({ where: { dldKey }, data: fields });
+      updated++;
+    } else {
+      // Only upcoming, live projects need a human decision in the admin inbox; the rest are filed as ignored.
+      const upcoming = !/finish|complete|cancel|friez|freez/i.test(status ?? '') && (!completionDate || completionDate > now);
+      await prisma.dldProject.create({ data: { dldKey, ...fields, review: upcoming ? 'NEW' : 'IGNORED' } });
+      created++;
+    }
+  }
+  return { created, updated };
+}
+
+/**
+ * 1. Re-check the last 60 days (new registrations and newly started projects).
+ * 2. Then load the full register one calendar year of start dates at a time, newest first,
+ *    back to 2002, remembering progress so interrupted runs resume.
+ */
 async function syncProjects(deadline: number) {
   const state = await getState('projects');
   await markStarted('projects');
+  const info = (state.info ?? {}) as { nextYear?: number; historyComplete?: boolean; futureDone?: boolean; sampleKeys?: string[] };
   const today = utcDay(new Date());
-  // First run looks back two years to seed the inbox; later runs only re-check recent registrations.
-  const from = addDays(today, state.lastSuccessAt ? -60 : -730);
   let created = 0;
   let updated = 0;
   let error: string | null = null;
-  let sampleKeys: string[] | undefined;
+  let sampleKeys = info.sampleKeys;
+  let nextYear = info.nextYear ?? today.getUTCFullYear();
+  let futureDone = info.futureDone ?? false;
+
+  const run = async (rows: Row[]) => {
+    if (rows[0]) sampleKeys = Object.keys(rows[0]).slice(0, 40);
+    const r = await upsertProjects(rows);
+    created += r.created;
+    updated += r.updated;
+  };
+  const save = (extra: Record<string, unknown> = {}) =>
+    prisma.syncState.update({
+      where: { id: 'projects' },
+      data: {
+        info: { nextYear, futureDone, historyComplete: nextYear < PROJECT_HISTORY_FROM_YEAR, sampleKeys, ...extra } as Prisma.InputJsonValue,
+      },
+    });
 
   try {
-    const seen = new Map<string, Row>();
-    // date_type: 1 = start date, 3 = adoption (registration) date
-    for (const dateType of ['1', '3']) {
+    for (const dateType of ['3', '1']) {
       if (Date.now() > deadline) throw new OutOfTime();
-      const rows = await fetchAll(
-        'projects',
-        {
-          P_FROM_DATE: dldDate(from),
-          P_TO_DATE: dldDate(today),
-          P_DATE_TYPE: dateType,
-          P_PRJ_TYPE_ID: '',
-          P_PRJ_STATUS: '',
-          P_ZONE_ID: '',
-          P_AREA_ID: '',
-        },
-        deadline,
-      );
-      if (rows[0]) sampleKeys = Object.keys(rows[0]).slice(0, 40);
-      for (const r of rows) {
-        const name = pick(r, 'PROJECT_EN', 'PROJECT_NAME_EN', 'PROJECT_NAME', 'PROJECT_NAME_E');
-        if (!name) continue;
-        const developer = pick(r, 'DEVELOPER_EN', 'DEVELOPER_NAME_EN', 'DEVELOPER_NAME', 'MASTER_DEVELOPER_EN');
-        const key = pick(r, 'PROJECT_ID', 'PROJECT_NUMBER') ?? `${areaKey(name)}|${areaKey(developer)}`;
-        seen.set(key, r);
-      }
+      await run(await fetchProjectsWindow(addDays(today, -60), today, dateType, deadline));
     }
-
-    const now = new Date();
-    for (const [dldKey, r] of seen) {
-      const name = pick(r, 'PROJECT_EN', 'PROJECT_NAME_EN', 'PROJECT_NAME', 'PROJECT_NAME_E')!;
-      const status = pick(r, 'PROJECT_STATUS', 'PROJECT_STATUS_EN', 'STATUS_EN', 'STATUS');
-      const completionDate = parseDldDate(pick(r, 'PROJECT_END_DATE', 'END_DATE', 'COMPLETION_DATE'));
-      const fields = {
-        name,
-        developer: pick(r, 'DEVELOPER_EN', 'DEVELOPER_NAME_EN', 'DEVELOPER_NAME', 'MASTER_DEVELOPER_EN'),
-        area: pick(r, 'AREA_EN', 'AREA_NAME_EN', 'AREA_NAME'),
-        status,
-        startDate: parseDldDate(pick(r, 'PROJECT_START_DATE', 'START_DATE')),
-        completionDate,
-        percentComplete: num(pick(r, 'PERCENT_COMPLETED', 'PERCENTAGE_COMPLETED', 'COMPLETION_PERCENTAGE', 'PERCENT_COMPLETE')),
-        units: (() => {
-          const u = num(pick(r, 'NO_OF_UNITS', 'UNITS', 'NUMBER_OF_UNITS', 'CNT_UNIT'));
-          return u === null ? null : Math.round(u);
-        })(),
-        raw: r as Prisma.InputJsonValue,
-        lastSeenAt: now,
-      };
-      const existing = await prisma.dldProject.findUnique({ where: { dldKey }, select: { id: true } });
-      if (existing) {
-        await prisma.dldProject.update({ where: { dldKey }, data: fields });
-        updated++;
-      } else {
-        // Only upcoming, live projects need a human decision; the rest are filed as ignored.
-        const upcoming =
-          !/finish|complete|cancel|friez|freez/i.test(status ?? '') && (!completionDate || completionDate > now);
-        await prisma.dldProject.create({ data: { dldKey, ...fields, review: upcoming ? 'NEW' : 'IGNORED' } });
-        created++;
-      }
+    if (!futureDone) {
+      // Projects whose start date is in the future
+      await run(await fetchProjectsWindow(addDays(today, 1), addDays(today, 365 * 8), '1', deadline));
+      futureDone = true;
+      await save();
+    }
+    while (nextYear >= PROJECT_HISTORY_FROM_YEAR) {
+      if (Date.now() > deadline) throw new OutOfTime();
+      const from = new Date(Date.UTC(nextYear, 0, 1));
+      const to = nextYear === today.getUTCFullYear() ? today : new Date(Date.UTC(nextYear, 11, 31));
+      await run(await fetchProjectsWindow(from, to, '1', deadline));
+      nextYear--;
+      await save();
     }
   } catch (err) {
     if (!(err instanceof OutOfTime)) error = err instanceof Error ? err.message : String(err);
-    else error = 'Stopped early to stay within the time limit; will continue next run.';
   }
 
   await prisma.syncState.update({
@@ -468,10 +514,62 @@ async function syncProjects(deadline: number) {
       ...(error ? { lastError: error } : { lastSuccessAt: new Date(), lastError: null }),
       lastCount: created,
       totalRows: await prisma.dldProject.count(),
-      info: { updated, sampleKeys },
+      info: {
+        nextYear,
+        futureDone,
+        historyComplete: nextYear < PROJECT_HISTORY_FROM_YEAR,
+        historyFromYear: PROJECT_HISTORY_FROM_YEAR,
+        updated,
+        sampleKeys,
+      } as Prisma.InputJsonValue,
     },
   });
-  return { created, updated, error };
+  return { created, updated, error, historyComplete: nextYear < PROJECT_HISTORY_FROM_YEAR, nextYear };
+}
+
+// ───────────────────────── per-project market figures ─────────────────────────
+
+/** Sale prices (12 months) and rents (120 days) per project and bedroom bucket. */
+export async function rebuildProjectStats() {
+  const today = utcDay(new Date());
+  // Phase moves from off-plan to ready as projects complete, so refresh it for every project daily
+  await prisma.$executeRawUnsafe(`
+    UPDATE "DldProject" SET phase = CASE
+      WHEN status ~* '(cancel|friez|freez)' THEN 'CANCELLED'
+      WHEN status ~* '(finish|complet)' OR "percentComplete" >= 100
+        OR ("completionDate" <= now() AND "percentComplete" IS NULL) THEN 'READY'
+      ELSE 'OFFPLAN' END`);
+  const bucketSql = `
+    CASE
+      WHEN "isVilla" THEN CASE WHEN rooms IS NULL THEN NULL WHEN rooms <= 3 THEN 'v3' WHEN rooms = 4 THEN 'v4' ELSE 'v5' END
+      ELSE CASE WHEN rooms IS NULL THEN NULL WHEN rooms >= 4 THEN '4' ELSE rooms::text END
+    END`;
+  await prisma.$transaction([
+    prisma.$executeRawUnsafe(`DELETE FROM "ProjectStat"`),
+    prisma.$executeRawUnsafe(
+      `INSERT INTO "ProjectStat" ("projectKey", bucket, "saleCount", "saleP25", "saleMedian", "saleP75", "psfMedian", "rentCount", "rentMedian", "updatedAt")
+       SELECT COALESCE(s.pk, r.pk), COALESCE(s.bucket, r.bucket),
+              COALESCE(s.n, 0), s.p25, s.med, s.p75, s.psf, COALESCE(r.n, 0), r.med, now()
+       FROM (
+         SELECT "projectKey" pk, bucket, count(*)::int n,
+                percentile_cont(0.25) WITHIN GROUP (ORDER BY value) p25,
+                percentile_cont(0.5)  WITHIN GROUP (ORDER BY value) med,
+                percentile_cont(0.75) WITHIN GROUP (ORDER BY value) p75,
+                percentile_cont(0.5)  WITHIN GROUP (ORDER BY value / "sizeSqm") FILTER (WHERE "sizeSqm" > 10) / 10.7639 psf
+         FROM (SELECT *, ${bucketSql} AS bucket FROM "DldSale" WHERE "soldOn" >= $1 AND "projectKey" IS NOT NULL) x
+         WHERE bucket IS NOT NULL GROUP BY "projectKey", bucket HAVING count(*) >= 2
+       ) s
+       FULL OUTER JOIN (
+         SELECT "projectKey" pk, bucket, count(*)::int n,
+                percentile_cont(0.5) WITHIN GROUP (ORDER BY "annualAmount") med
+         FROM (SELECT *, ${bucketSql} AS bucket FROM "DldRent" WHERE "registeredOn" >= $2 AND "projectKey" IS NOT NULL) y
+         WHERE bucket IS NOT NULL GROUP BY "projectKey", bucket HAVING count(*) >= 2
+       ) r ON r.pk = s.pk AND r.bucket = s.bucket`,
+      addDays(today, -365),
+      addDays(today, -RENT_BACKFILL_DAYS),
+    ),
+  ]);
+  return { rows: await prisma.projectStat.count() };
 }
 
 // ───────────────────────── benchmarks ─────────────────────────
@@ -649,10 +747,11 @@ export async function runDldStep(step: SyncStep, budgetMs = 20_000) {
     if (step === 'sales') return { skipped: false, step, result: await runDailyJob(JOBS[1], deadline) };
     const benchmarks = await recomputeBenchmarks();
     const rentPrices = await rebuildRentStats();
+    const projectStats = await rebuildProjectStats();
     const today = utcDay(new Date());
     await prisma.dldRent.deleteMany({ where: { registeredOn: { lt: addDays(today, -RENT_KEEP_DAYS) } } });
     await prisma.dldSale.deleteMany({ where: { soldOn: { lt: addDays(today, -SALE_KEEP_DAYS) } } });
-    return { skipped: false, step, result: { benchmarks, rentPrices } };
+    return { skipped: false, step, result: { benchmarks, rentPrices, projectStats } };
   } finally {
     await releaseLock();
   }
@@ -669,13 +768,14 @@ export async function runDldSync({ budgetMs = 38_000 }: { budgetMs?: number } = 
     const sales = await runDailyJob(JOBS[1], deadline);
     const benchmarks = await recomputeBenchmarks();
     const rentPrices = await rebuildRentStats();
+    const projectStats = await rebuildProjectStats();
 
     // Keep storage bounded
     const today = utcDay(new Date());
     await prisma.dldRent.deleteMany({ where: { registeredOn: { lt: addDays(today, -RENT_KEEP_DAYS) } } });
     await prisma.dldSale.deleteMany({ where: { soldOn: { lt: addDays(today, -SALE_KEEP_DAYS) } } });
 
-    return { skipped: false, seconds: Math.round((Date.now() - started) / 1000), projects, rents, sales, benchmarks, rentPrices };
+    return { skipped: false, seconds: Math.round((Date.now() - started) / 1000), projects, rents, sales, benchmarks, rentPrices, projectStats };
   } finally {
     await releaseLock();
   }

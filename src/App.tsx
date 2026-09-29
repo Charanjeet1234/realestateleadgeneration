@@ -6,6 +6,8 @@ import { LiveRentBenchmarksTable } from './components/LiveRentBenchmarksTable';
 import { AiSalesAssistant } from './components/AiSalesAssistant';
 import { ClosingCostCalculator } from './components/ClosingCostCalculator';
 import { DeveloperDirectory } from './components/DeveloperDirectory';
+import { ProjectsDirectory, type ProjectFilters } from './components/ProjectsDirectory';
+import { RegisteredDevelopers } from './components/RegisteredDevelopers';
 import { BrokerLeadsInbox } from './components/BrokerLeadsInbox';
 import { LeadCaptureModal } from './components/LeadCaptureModal';
 import { Footer } from './components/Footer';
@@ -27,9 +29,14 @@ import {
   Award,
 } from 'lucide-react';
 
-export type AppTab = 'browse' | 'benchmarks' | 'ai-assistant' | 'calculator' | 'developers' | 'leads' | 'admin';
+export type AppTab = 'browse' | 'projects' | 'benchmarks' | 'ai-assistant' | 'calculator' | 'developers' | 'leads' | 'admin';
 
-const PATH_TABS: Record<string, AppTab> = { '/crm': 'leads', '/admin': 'admin' };
+const PATH_TABS: Record<string, AppTab> = { '/crm': 'leads', '/admin': 'admin', '/projects': 'projects' };
+
+/** Map the Residences unit-type filter to the projects directory's bedroom filter. */
+function bedsFromUnitType(unitType: string): ProjectFilters['beds'] {
+  return ({ Studio: '0', '1BR': '1', '2BR': '2', '3BR+': '3', 'Villa/Townhouse': 'villa' } as Record<string, ProjectFilters['beds']>)[unitType] ?? '';
+}
 
 function tabFromUrl(): AppTab {
   const path = window.location.pathname.replace(/\/+$/, '');
@@ -42,14 +49,23 @@ export default function App() {
     useMarketData();
   const [activeTab, setActiveTabState] = useState<AppTab>(tabFromUrl);
   const [initialLeadId] = useState(() => new URLSearchParams(window.location.search).get('lead'));
+  const [projectsPreset, setProjectsPreset] = useState<Partial<ProjectFilters> | null>(null);
 
   // Keep the URL in sync so staff can bookmark /crm and /admin
   const setActiveTab = useCallback((tab: AppTab) => {
     setActiveTabState(tab);
-    const path = tab === 'leads' ? '/crm' : tab === 'admin' ? '/admin' : '/';
+    const path = tab === 'leads' ? '/crm' : tab === 'admin' ? '/admin' : tab === 'projects' ? '/projects' : '/';
     if (window.location.pathname !== path) window.history.pushState(null, '', path + (path === '/' ? window.location.search : ''));
     window.scrollTo({ top: 0 });
   }, []);
+
+  const openProjects = useCallback(
+    (preset: Partial<ProjectFilters>) => {
+      setProjectsPreset({ ...preset });
+      setActiveTab('projects');
+    },
+    [setActiveTab],
+  );
 
   useEffect(() => {
     const onPop = () => setActiveTabState(tabFromUrl());
@@ -307,6 +323,12 @@ export default function App() {
                       Reset All Filters
                     </button>
                     <button
+                      onClick={() => openProjects({ beds: bedsFromUnitType(filters.unitType), developer: '' })}
+                      className="px-4 py-2 bg-gulf hover:bg-gulf-deep text-champagne text-xs rounded-xl"
+                    >
+                      Search all registered projects
+                    </button>
+                    <button
                       onClick={() => handleOpenLeadModal('Custom Off-Market Portfolio Request')}
                       className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-onyx text-xs rounded-xl font-bold shadow-md"
                     >
@@ -335,6 +357,23 @@ export default function App() {
                   ))}
                 </div>
               )}
+
+              {/* Bridge to the full register */}
+              <div className="mt-12 flex flex-col md:flex-row md:items-center justify-between gap-5 p-6 sm:p-8 rounded-[22px] border border-slate-700">
+                <div className="max-w-2xl">
+                  <h3 className="text-2xl sm:text-3xl font-serif text-slate-50">Looking beyond our featured residences?</h3>
+                  <p className="mt-2 text-slate-400">
+                    Search every project registered with the Dubai Land Department by area, developer and bedrooms, with what units
+                    actually sold and rented for.
+                  </p>
+                </div>
+                <button
+                  onClick={() => openProjects({ beds: bedsFromUnitType(filters.unitType) })}
+                  className="shrink-0 px-6 py-3.5 rounded-full bg-gulf hover:bg-gulf-deep text-champagne text-sm transition-colors"
+                >
+                  Browse all projects
+                </button>
+              </div>
 
               {/* Pre-launch access */}
               <div className="theme-dark mt-24 relative overflow-hidden rounded-[28px] bg-slate-950">
@@ -407,13 +446,24 @@ export default function App() {
           />
         )}
 
+        {/* Projects directory (DLD register) */}
+        {activeTab === 'projects' && (
+          <ProjectsDirectory
+            preset={projectsPreset}
+            onEnquire={(title, location) => handleOpenLeadModal(title, location, undefined, 'Projects directory')}
+          />
+        )}
+
         {/* Developers Directory Tab */}
         {activeTab === 'developers' && (
-          <DeveloperDirectory
-            onSelectDeveloper={handleSelectDeveloperFromDirectory}
-            onOpenLeadModal={handleOpenLeadModal}
-            onAskAi={handleAskAi}
-          />
+          <>
+            <DeveloperDirectory
+              onSelectDeveloper={handleSelectDeveloperFromDirectory}
+              onOpenLeadModal={handleOpenLeadModal}
+              onAskAi={handleAskAi}
+            />
+            <RegisteredDevelopers onViewProjects={(developer) => openProjects({ developer })} />
+          </>
         )}
 
         {/* Staff area: CRM & admin (sign-in required) */}

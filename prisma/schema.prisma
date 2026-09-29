@@ -277,6 +277,7 @@ model DldSale {
   areaKey     String
   masterKey   String?
   project     String?
+  projectKey  String?
   isOffplan   Boolean  @default(false)
   rooms       Int?
   isVilla     Boolean  @default(false)
@@ -286,6 +287,7 @@ model DldSale {
   @@index([soldOn])
   @@index([masterKey, soldOn])
   @@index([areaKey, soldOn])
+  @@index([projectKey, soldOn])
 }
 
 enum ProjectReview {
@@ -299,6 +301,8 @@ model DldProject {
   id              String        @id @default(cuid())
   dldKey          String        @unique
   name            String
+  nameKey         String        // normalised name, joins to sales/rents projectKey
+  phase           String        @default("OFFPLAN") // OFFPLAN | READY | CANCELLED (refreshed daily)
   developer       String?
   area            String?
   status          String?
@@ -314,6 +318,29 @@ model DldProject {
   lastSeenAt      DateTime      @default(now())
 
   @@index([review, firstSeenAt])
+  @@index([nameKey])
+  @@index([phase])
+  @@index([developer])
+  @@index([area])
+}
+
+// Market figures per project and bedroom bucket (same buckets as RentStat), rebuilt after each sync:
+// sales over the last 12 months, rents over the last 120 days.
+model ProjectStat {
+  id          Int      @id @default(autoincrement())
+  projectKey  String
+  bucket      String
+  saleCount   Int      @default(0)
+  saleP25     Float?
+  saleMedian  Float?
+  saleP75     Float?
+  psfMedian   Float?
+  rentCount   Int      @default(0)
+  rentMedian  Float?
+  updatedAt   DateTime @default(now())
+
+  @@unique([projectKey, bucket])
+  @@index([bucket, saleMedian])
 }
 
 // Progress and health of each sync job (rents, sales, projects, benchmarks)

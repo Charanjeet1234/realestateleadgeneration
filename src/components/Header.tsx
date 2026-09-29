@@ -30,6 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   type NavTab = { id: AppTab; label: string; short: string; badge?: number };
   const publicTabs: NavTab[] = [
     { id: 'browse', label: 'Residences', short: 'Residences' },
+    { id: 'projects', label: 'Projects', short: 'Projects' },
     { id: 'benchmarks', label: 'Rent & yields', short: 'Yields' },
     { id: 'ai-assistant', label: 'AI advisor', short: 'AI advisor' },
     { id: 'calculator', label: 'Buying costs', short: 'Costs' },

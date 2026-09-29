@@ -64,6 +64,8 @@ Every night at 05:00 Dubai time (Vercel Cron → `/api/cron/dld-sync`) the site 
 
 - **Rent prices by building** → the Rent & yields page lists every Dubai area and, one click in, every building, with median rent and the middle-50% range for studio, 1, 2, 3 and 4+ bed apartments and ≤3, 4 and 5+ bed villas (last 120 days of Ejari contracts; buildings or bedroom types with fewer than 3 contracts are hidden). Visitors can search any building or area and enquire from any row; those leads arrive tagged "Rent prices by building". Public API: `GET /api/rent-prices/areas`, `/api/rent-prices/areas/:areaKey`, `/api/rent-prices/search?q=`.
 
+- **Projects directory** (`/projects`) → every project on the DLD register (full history back to 2002, loaded year by year), filterable by area, developer, off-plan/ready, completion year, bedrooms and budget. Bedroom and budget filters use real DLD sales (12 months) and Ejari rents (120 days) per project, so "2 bed" finds every project where 2-beds have sold or rented, with the price and rent shown. Brand-new launches without resales can be included with one click. Every card has an enquiry button (leads tagged "Projects directory"). The Developers page lists every registered developer, linking to their projects. API: `GET /api/projects`, `/api/projects/facets`, `/api/registered-developers`.
+
 Setup: add `CRON_SECRET` in Vercel (any long random text) and redeploy. The first sync loads recent days first; the full history (120 days of rents, 456 days of sales) completes over the next few runs. Click **Run sync now** in Admin to speed it up, or load everything at once from your computer:
 
 ```bash
