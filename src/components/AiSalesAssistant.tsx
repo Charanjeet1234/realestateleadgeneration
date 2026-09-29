@@ -13,6 +13,7 @@ import {
   MessageSquare,
   FileText,
 } from 'lucide-react';
+import { getAttribution } from '../lib/attribution';
 
 interface ChatMessage {
   id: string;
@@ -117,6 +118,8 @@ How may I tailor your property search today? Share your preferred community, bud
       }
 
       const data = await response.json();
+      // The server captures a lead when the visitor types their phone + email into the chat
+      if (data.leadCaptured) setLeadSubmitted(true);
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
@@ -175,6 +178,7 @@ To send you the complete project brochure, exact floor plans, and updated availa
           transactionType: 'buy_offplan',
           leadSource: 'AI Sales Assistant Inline Funnel',
           message: 'User requested tailored floor plans, DLD transaction report, and brochure via AI chat.',
+          ...getAttribution(),
         }),
       });
 

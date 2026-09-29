@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   X,
   ShieldCheck,
@@ -13,12 +13,16 @@ import {
   Lock,
 } from 'lucide-react';
 import { ALL_COMMUNITIES } from '../data/marketData';
+import { api, ApiError } from '../lib/api';
+import { getAttribution } from '../lib/attribution';
 
 interface LeadCaptureModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultTitle?: string;
   defaultLocation?: string;
+  propertyId?: string;
+  leadSource?: string;
   onLeadCaptured?: () => void;
 }
 
@@ -27,6 +31,8 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
   onClose,
   defaultTitle = 'VIP Project Brochure & Floor Plan Package',
   defaultLocation = 'Downtown Dubai',
+  propertyId,
+  leadSource = 'Portal VIP Lead Gate',
   onLeadCaptured,
 }) => {
   const [formData, setFormData] = useState({
@@ -40,11 +46,22 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
     message: '',
     requestAirportPickup: false,
     requestDldReport: true,
+    marketingConsent: false,
+    website: '', // honeypot
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Fresh form each time the modal opens (keeps contact details the visitor already typed)
+  useEffect(() => {
+    if (isOpen) {
+      setIsSuccess(false);
+      setErrorMessage('');
+      setFormData((f) => ({ ...f, preferredLocation: defaultLocation, message: '', website: '' }));
+    }
+  }, [isOpen, defaultLocation, defaultTitle]);
 
   if (!isOpen) return null;
 
@@ -54,32 +71,34 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
-          email: formData.email,
-          preferredLocation: formData.preferredLocation,
-          budget: formData.budget,
-          transactionType: formData.transactionType,
-          unitType: formData.unitType,
-          propertyTitle: defaultTitle,
-          leadSource: 'Portal VIP Lead Gate',
-          message: `${formData.message} | Airport Pickup: ${formData.requestAirportPickup ? 'YES' : 'NO'} | DLD Report: ${formData.requestDldReport ? 'YES' : 'NO'}`,
-        }),
+      const extras = [
+        formData.requestDldReport && 'Wants DLD/DMT transaction & yield report',
+        formData.requestAirportPickup && 'Wants airport pickup & private tour',
+      ].filter(Boolean);
+      await api.post('/leads', {
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        preferredLocation: formData.preferredLocation,
+        budget: formData.budget,
+        transactionType: formData.transactionType,
+        unitType: formData.unitType,
+        propertyId,
+        propertyTitle: defaultTitle,
+        leadSource,
+        message: [formData.message, ...extras].filter(Boolean).join('\n') || undefined,
+        marketingConsent: formData.marketingConsent,
+        website: formData.website,
+        ...getAttribution(),
       });
-
-      if (!res.ok) {
-        throw new Error('Failed to record inquiry');
-      }
 
       setIsSuccess(true);
       if (onLeadCaptured) onLeadCaptured();
     } catch (err: unknown) {
       console.error(err);
-      setErrorMessage('Communication error. Please ensure phone and email are valid.');
+      setErrorMessage(
+        err instanceof ApiError ? err.message : 'Connection problem. Please try again or message us on WhatsApp.',
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -259,6 +278,29 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
                   />
                   <span>VIP Chauffeured Airport Pickup & Private Property Tour ( complimentary )</span>
                 </label>
+                <label className="flex items-start gap-2 cursor-pointer text-slate-400">
+                  <input
+                    type="checkbox"
+                    checked={formData.marketingConsent}
+                    onChange={(e) => setFormData({ ...formData, marketingConsent: e.target.checked })}
+                    className="accent-amber-500 rounded mt-0.5"
+                  />
+                  <span>Send me new launches and market updates by email and WhatsApp. You can opt out anytime.</span>
+                </label>
+              </div>
+
+              {/* Honeypot: hidden from people, filled by bots */}
+              <div aria-hidden="true" className="absolute -left-[9999px] w-px h-px overflow-hidden">
+                <label>
+                  Website
+                  <input
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={formData.website}
+                    onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                  />
+                </label>
               </div>
 
               <div className="pt-2">
@@ -280,7 +322,7 @@ export const LeadCaptureModal: React.FC<LeadCaptureModalProps> = ({
 
               <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 pt-1">
                 <Lock className="w-3 h-3 text-slate-500" />
-                <span>Strict Client Confidentiality · RERA Licensed Brokerage</span>
+                <span>Your details are used only to respond to this inquiry · RERA Licensed Brokerage</span>
               </div>
             </form>
           </div>

@@ -12,7 +12,6 @@ import {
   Layers,
   RotateCcw
 } from 'lucide-react';
-import { LIVE_RENTAL_BENCHMARKS } from '../data/marketData';
 
 export type PropertyUnitType = 'Studio' | '1 Bedroom' | '2 Bedroom' | '3 Bedroom' | 'Luxury Villa';
 

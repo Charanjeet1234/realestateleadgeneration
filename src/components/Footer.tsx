@@ -2,7 +2,7 @@ import React from 'react';
 import { Building2, ShieldCheck, MapPin, Phone, Mail, Award, Lock } from 'lucide-react';
 import { COMPLIANCE_DISCLAIMER } from '../utils/complianceCalculator';
 
-export const Footer: React.FC = () => {
+export const Footer: React.FC<{ onAgentLogin?: () => void }> = ({ onAgentLogin }) => {
   return (
     <footer className="bg-[#050811] border-t border-slate-800 text-slate-400 text-xs">
       {/* Upper Footer: Regulatory Badges & Office Locations */}
@@ -98,6 +98,14 @@ export const Footer: React.FC = () => {
               <span className="hover:text-slate-300 cursor-pointer">Privacy & DLD Protection</span>
               <span>·</span>
               <span className="hover:text-slate-300 cursor-pointer">AML Compliance</span>
+              {onAgentLogin && (
+                <>
+                  <span>·</span>
+                  <button onClick={onAgentLogin} className="hover:text-slate-300">
+                    Agent login
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

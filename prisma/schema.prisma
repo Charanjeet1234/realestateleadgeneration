@@ -1,0 +1,215 @@
+// PropEngine UAE — database schema
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../server/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// Team & access
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  AGENT
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String
+  phone          String?
+  passwordHash   String
+  role           Role      @default(AGENT)
+  active         Boolean   @default(true)
+  // Used for round-robin auto-assignment of new leads
+  lastAssignedAt DateTime?
+  lastLoginAt    DateTime?
+  // Bumped on password change / deactivation to invalidate existing sessions
+  tokenVersion   Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  assignedLeads Lead[]         @relation("AssignedLeads")
+  activities    LeadActivity[]
+}
+
+// ─────────────────────────────────────────────
+// Leads & CRM
+// ─────────────────────────────────────────────
+
+enum TransactionType {
+  buy_offplan
+  buy_ready
+  rent_annual
+  rent_shortterm
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  VIEWING_SCHEDULED
+  NEGOTIATION
+  WON
+  LOST
+}
+
+model Lead {
+  id                String          @id @default(cuid())
+  name              String
+  phone             String
+  email             String
+  preferredLocation String?
+  budget            String?
+  transactionType   TransactionType @default(buy_offplan)
+  unitType          String?
+  message           String?
+  source            String          @default("Website")
+  propertyTitle     String?
+  propertyId        String?
+  property          Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  status         LeadStatus @default(NEW)
+  isVip          Boolean    @default(false)
+  assignedToId   String?
+  assignedTo     User?      @relation("AssignedLeads", fields: [assignedToId], references: [id], onDelete: SetNull)
+  nextFollowUpAt DateTime?
+  firstContactAt DateTime?
+
+  // Marketing attribution
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  referrer    String?
+  landingPage String?
+
+  // Compliance (UAE PDPL): record consent for marketing contact
+  marketingConsent Boolean @default(false)
+  // SHA-256 of the client IP — used only for abuse throttling, never shown
+  ipHash           String?
+  userAgent        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activities LeadActivity[]
+
+  @@index([status])
+  @@index([assignedToId])
+  @@index([createdAt])
+  @@index([email])
+  @@index([phone])
+  @@index([ipHash, createdAt])
+}
+
+enum ActivityType {
+  SYSTEM
+  NOTE
+  STATUS_CHANGE
+  ASSIGNMENT
+  CALL
+  WHATSAPP
+  EMAIL
+  REPEAT_INQUIRY
+}
+
+model LeadActivity {
+  id        String       @id @default(cuid())
+  leadId    String
+  lead      Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  userId    String?
+  user      User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  type      ActivityType
+  body      String
+  createdAt DateTime     @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+// ─────────────────────────────────────────────
+// Listings & market data (managed from the admin panel)
+// ─────────────────────────────────────────────
+
+model Property {
+  id                    String   @id @default(cuid())
+  title                 String
+  tagline               String
+  developer             String
+  developerTier         String
+  emirate               String
+  community             String
+  category              String
+  unitTypes             String[]
+  priceAED              Int
+  priceUSD              Int
+  priceRangeFormatted   String
+  rentalBenchmarkAED    String?
+  handoverDate          String?
+  // { summary, downPayment, duringConstruction, onHandover, postHandover? }
+  paymentPlan           Json?
+  // { chequesAccepted, estimatedServiceCharge, securityDeposit, minTerm }
+  rentalFactors         Json?
+  projectedROI          Float
+  capitalGrowthForecast String
+  goldenVisaEligible    Boolean  @default(false)
+  imageUrl              String
+  featured              Boolean  @default(false)
+  // { registrationFeeAED, adminFeeAED, agencyFeeAED, oqoodOrDeedAED }
+  dldCosts              Json
+  highlights            String[]
+  floorPlanCount        Int      @default(0)
+  published             Boolean  @default(true)
+  sortOrder             Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  leads Lead[]
+
+  @@index([published, emirate, category])
+}
+
+model Developer {
+  id                    String   @id @default(cuid())
+  name                  String   @unique
+  emirate               String
+  establishedYear       Int
+  completedProjects     Int
+  activeProjects        Int
+  signatureMasterpieces String[]
+  reputationSummary     String
+  standardPaymentPlan   String
+  onTimeDeliveryRate    String
+  logoInitial           String
+  sortOrder             Int      @default(0)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model RentBenchmark {
+  id                   String   @id @default(cuid())
+  community            String   @unique
+  emirate              String
+  avgPriceSqftAED      Int
+  studioRentAED        String
+  oneBedRentAED        String
+  twoBedRentAED        String
+  threeBedRentAED      String
+  villaRentAED         String?
+  avgYield             String
+  chequeNorm           String
+  serviceChargePerSqft String
+  topDeveloper         String
+  growthYoY            String
+  rentalTrend          String
+  sortOrder            Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}

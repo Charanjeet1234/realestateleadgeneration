@@ -10,7 +10,8 @@ import {
   DollarSign,
   Layers,
 } from 'lucide-react';
-import { LIVE_RENTAL_BENCHMARKS, CommunityBenchmark } from '../data/marketData';
+import { CommunityBenchmark } from '../data/marketData';
+import { useMarketData } from '../lib/context';
 import { RoiComparisonWidget } from './RoiComparisonWidget';
 
 interface LiveRentBenchmarksTableProps {
@@ -24,6 +25,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
   onAskAi,
   onOpenLeadModal,
 }) => {
+  const { benchmarks: LIVE_RENTAL_BENCHMARKS } = useMarketData();
   const [search, setSearch] = useState('');
   const [selectedEmirate, setSelectedEmirate] = useState<'ALL' | 'Dubai' | 'Abu Dhabi'>('ALL');
 

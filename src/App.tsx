@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { HeroBanner, FilterState } from './components/HeroBanner';
 import { PropertyCard } from './components/PropertyCard';
@@ -9,7 +9,11 @@ import { DeveloperDirectory } from './components/DeveloperDirectory';
 import { BrokerLeadsInbox } from './components/BrokerLeadsInbox';
 import { LeadCaptureModal } from './components/LeadCaptureModal';
 import { Footer } from './components/Footer';
-import { PROPERTIES_DATABASE, Property } from './data/marketData';
+import { Property } from './data/marketData';
+import { LoginPanel } from './components/LoginPanel';
+import { AdminPanel } from './components/admin/AdminPanel';
+import { useAuth, useMarketData } from './lib/context';
+import type { LeadStats } from './lib/api';
 import {
   Sparkles,
   PhoneCall,
@@ -23,16 +27,43 @@ import {
   Award,
 } from 'lucide-react';
 
+export type AppTab = 'browse' | 'benchmarks' | 'ai-assistant' | 'calculator' | 'developers' | 'leads' | 'admin';
+
+const PATH_TABS: Record<string, AppTab> = { '/crm': 'leads', '/admin': 'admin' };
+
+function tabFromUrl(): AppTab {
+  const path = window.location.pathname.replace(/\/+$/, '');
+  return PATH_TABS[path] ?? 'browse';
+}
+
 export default function App() {
-  const [activeTab, setActiveTab] = useState<
-    'browse' | 'benchmarks' | 'ai-assistant' | 'calculator' | 'developers' | 'leads'
-  >('browse');
+  const { user, loading: authLoading, logout } = useAuth();
+  const { properties: PROPERTIES_DATABASE, loading: listingsLoading, error: listingsError, reload: reloadListings } =
+    useMarketData();
+  const [activeTab, setActiveTabState] = useState<AppTab>(tabFromUrl);
+  const [initialLeadId] = useState(() => new URLSearchParams(window.location.search).get('lead'));
+
+  // Keep the URL in sync so staff can bookmark /crm and /admin
+  const setActiveTab = useCallback((tab: AppTab) => {
+    setActiveTabState(tab);
+    const path = tab === 'leads' ? '/crm' : tab === 'admin' ? '/admin' : '/';
+    if (window.location.pathname !== path) window.history.pushState(null, '', path + (path === '/' ? window.location.search : ''));
+    window.scrollTo({ top: 0 });
+  }, []);
+
+  useEffect(() => {
+    const onPop = () => setActiveTabState(tabFromUrl());
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
 
   const [currency, setCurrency] = useState<'AED' | 'USD'>('AED');
   const [leadModalOpen, setLeadModalOpen] = useState(false);
   const [leadModalTitle, setLeadModalTitle] = useState('VIP Allocation & Floor Plan Package');
   const [leadModalLocation, setLeadModalLocation] = useState('Downtown Dubai');
-  const [leadCount, setLeadCount] = useState(3);
+  const [leadModalPropertyId, setLeadModalPropertyId] = useState<string | undefined>();
+  const [leadModalSource, setLeadModalSource] = useState('Portal VIP Lead Gate');
+  const [leadCount, setLeadCount] = useState(0);
   const [aiInitialPrompt, setAiInitialPrompt] = useState('');
   const [calculatorInitialPrice, setCalculatorInitialPrice] = useState<number>(2500000);
   const [calculatorInitialEmirate, setCalculatorInitialEmirate] = useState<'Dubai' | 'Abu Dhabi'>('Dubai');
@@ -102,12 +133,14 @@ export default function App() {
 
       return true;
     });
-  }, [filters]);
+  }, [filters, PROPERTIES_DATABASE]);
 
   // Handler for opening lead modal with bespoke property title
-  const handleOpenLeadModal = (title?: string, location?: string) => {
+  const handleOpenLeadModal = (title?: string, location?: string, propertyId?: string, source?: string) => {
     setLeadModalTitle(title || 'VIP Project Brochure & Floor Plan Package');
     if (location) setLeadModalLocation(location);
+    setLeadModalPropertyId(propertyId);
+    setLeadModalSource(source || (propertyId ? 'Property Brochure Request' : 'Portal VIP Lead Gate'));
     setLeadModalOpen(true);
   };
 
@@ -145,17 +178,24 @@ export default function App() {
     setActiveTab('browse');
   };
 
-  // Fetch initial leads count from API
+  // Open-lead badge for signed-in staff only (lead data is never exposed publicly)
   useEffect(() => {
-    fetch('/api/leads')
+    if (!user) {
+      setLeadCount(0);
+      return;
+    }
+    fetch('/api/stats', { credentials: 'same-origin' })
       .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.leads) {
-          setLeadCount(data.leads.length);
-        }
-      })
+      .then((data: LeadStats | null) => data && setLeadCount(data.open))
       .catch(() => {});
-  }, []);
+  }, [user]);
+
+  // Leaving admin tabs after sign-out
+  useEffect(() => {
+    if (!authLoading && !user && activeTab === 'admin') setActiveTab('leads');
+  }, [authLoading, user, activeTab, setActiveTab]);
+
+  const handleStatsChange = useCallback((s: LeadStats) => setLeadCount(s.open), []);
 
   return (
     <div className="min-h-screen bg-[#080d1a] text-slate-100 flex flex-col font-sans selection:bg-amber-400/30 selection:text-amber-200">
@@ -167,6 +207,11 @@ export default function App() {
         setCurrency={setCurrency}
         onOpenLeadModal={handleOpenLeadModal}
         leadCount={leadCount}
+        user={user}
+        onLogout={async () => {
+          await logout();
+          setActiveTab('browse');
+        }}
       />
 
       {/* Main Content Area */}
@@ -219,7 +264,28 @@ export default function App() {
               </div>
 
               {/* Grid of Properties */}
-              {filteredProperties.length === 0 ? (
+              {listingsLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-busy="true">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="h-96 rounded-3xl bg-[#0b132b] border border-slate-800 animate-pulse" />
+                  ))}
+                </div>
+              ) : listingsError ? (
+                <div className="bg-[#0b132b] border border-slate-800 rounded-3xl p-10 text-center max-w-xl mx-auto space-y-3">
+                  <p className="text-sm text-slate-300">We couldn't load the listings right now.</p>
+                  <div className="flex justify-center gap-2">
+                    <button onClick={reloadListings} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-xl font-semibold">
+                      Try again
+                    </button>
+                    <button
+                      onClick={() => handleOpenLeadModal('Property Search Assistance')}
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs rounded-xl font-bold"
+                    >
+                      Ask a specialist
+                    </button>
+                  </div>
+                </div>
+              ) : filteredProperties.length === 0 ? (
                 <div className="bg-[#0b132b] border border-slate-800 rounded-3xl p-12 text-center max-w-xl mx-auto space-y-4">
                   <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400">
                     <Compass className="w-8 h-8" />
@@ -264,7 +330,12 @@ export default function App() {
                       property={property}
                       currency={currency}
                       onOpenBrochureModal={(p) =>
-                        handleOpenLeadModal(`Brochure & Floorplans for ${p.title} (${p.developer})`, p.community)
+                        handleOpenLeadModal(
+                          `Brochure & Floorplans for ${p.title} (${p.developer})`,
+                          p.community,
+                          p.id,
+                          'Property Brochure Request',
+                        )
                       }
                       onOpenCalculator={handleOpenCalculator}
                       onAskAi={handleAskAi}
@@ -350,8 +421,17 @@ export default function App() {
           />
         )}
 
-        {/* Agency CRM Leads Inbox Tab */}
-        {activeTab === 'leads' && <BrokerLeadsInbox />}
+        {/* Staff area: CRM & admin (sign-in required) */}
+        {(activeTab === 'leads' || activeTab === 'admin') &&
+          (authLoading ? (
+            <div className="py-24 text-center text-xs text-slate-500">Loading…</div>
+          ) : !user ? (
+            <LoginPanel />
+          ) : activeTab === 'admin' && user.role === 'ADMIN' ? (
+            <AdminPanel />
+          ) : (
+            <BrokerLeadsInbox initialLeadId={initialLeadId} onStatsChange={handleStatsChange} />
+          ))}
       </main>
 
       {/* Floating Action Buttons */}
@@ -386,11 +466,12 @@ export default function App() {
         onClose={() => setLeadModalOpen(false)}
         defaultTitle={leadModalTitle}
         defaultLocation={leadModalLocation}
-        onLeadCaptured={() => setLeadCount((c) => c + 1)}
+        propertyId={leadModalPropertyId}
+        leadSource={leadModalSource}
       />
 
       {/* Compliance-Rich Footer */}
-      <Footer />
+      <Footer onAgentLogin={() => setActiveTab('leads')} />
     </div>
   );
 }

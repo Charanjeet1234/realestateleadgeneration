@@ -10,8 +10,8 @@ import {
   Calendar,
   Percent,
 } from 'lucide-react';
+import { useMarketData } from '../lib/context';
 import {
-  DEVELOPERS_DATABASE,
   DeveloperInfo,
   DUBAI_DEVELOPERS,
   ABU_DHABI_DEVELOPERS,
@@ -28,6 +28,7 @@ export const DeveloperDirectory: React.FC<DeveloperDirectoryProps> = ({
   onOpenLeadModal,
   onAskAi,
 }) => {
+  const { developers: DEVELOPERS_DATABASE } = useMarketData();
   const [activeEmirate, setActiveEmirate] = useState<'ALL' | 'Dubai' | 'Abu Dhabi'>('ALL');
 
   const filteredDevelopers = DEVELOPERS_DATABASE.filter(

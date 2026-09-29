@@ -1,13 +1,17 @@
 import React from 'react';
-import { Building2, Sparkles, PhoneCall, ShieldCheck, Compass, Users, Calculator, MessageSquare } from 'lucide-react';
+import { Building2, Sparkles, PhoneCall, ShieldCheck, Compass, Users, Calculator, MessageSquare, Settings, LogOut } from 'lucide-react';
+import type { AppTab } from '../App';
+import type { SessionUser } from '../lib/api';
 
 interface HeaderProps {
-  activeTab: 'browse' | 'benchmarks' | 'ai-assistant' | 'calculator' | 'developers' | 'leads';
-  setActiveTab: (tab: 'browse' | 'benchmarks' | 'ai-assistant' | 'calculator' | 'developers' | 'leads') => void;
+  activeTab: AppTab;
+  setActiveTab: (tab: AppTab) => void;
   currency: 'AED' | 'USD';
   setCurrency: (c: 'AED' | 'USD') => void;
   onOpenLeadModal: (title?: string) => void;
   leadCount: number;
+  user: SessionUser | null;
+  onLogout: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,6 +21,8 @@ export const Header: React.FC<HeaderProps> = ({
   setCurrency,
   onOpenLeadModal,
   leadCount,
+  user,
+  onLogout,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-[#080d1a]/95 backdrop-blur-md border-b border-amber-500/20 shadow-xl">
@@ -152,6 +158,8 @@ export const Header: React.FC<HeaderProps> = ({
             Developers
           </button>
 
+{user && (
+          <>
           <button
             onClick={() => setActiveTab('leads')}
             className={`px-3.5 py-2 rounded-lg transition-all flex items-center gap-1.5 ${
@@ -161,17 +169,42 @@ export const Header: React.FC<HeaderProps> = ({
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            Broker CRM
+            CRM
             {leadCount > 0 && (
               <span className="px-1.5 py-0.2 bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded-full text-[10px] font-bold">
                 {leadCount}
               </span>
             )}
           </button>
+          {user.role === 'ADMIN' && (
+            <button
+              onClick={() => setActiveTab('admin')}
+              className={`px-3.5 py-2 rounded-lg transition-all flex items-center gap-1.5 ${
+                activeTab === 'admin'
+                  ? 'bg-amber-500 text-slate-950 font-bold shadow-md'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              }`}
+            >
+              <Settings className="w-3.5 h-3.5" />
+              Admin
+            </button>
+          )}
+          </>
+          )}
         </nav>
 
         {/* Action CTAs */}
         <div className="flex items-center gap-2.5">
+          {user && (
+            <button
+              onClick={onLogout}
+              title={`Signed in as ${user.name} — sign out`}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 text-xs font-semibold"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Sign out</span>
+            </button>
+          )}
           <a
             href="https://wa.me/971508392140?text=Hello%20PropEngine%20UAE%20Specialist,%20I%20would%20like%20to%20inquire%20about%20off-market%20properties%20and%20investment%20brochures."
             target="_blank"
@@ -235,6 +268,8 @@ export const Header: React.FC<HeaderProps> = ({
         >
           Developers
         </button>
+{user && (
+          <>
         <button
           onClick={() => setActiveTab('leads')}
           className={`whitespace-nowrap px-3 py-1.5 rounded-lg ${
@@ -243,6 +278,18 @@ export const Header: React.FC<HeaderProps> = ({
         >
           Leads ({leadCount})
         </button>
+            {user.role === 'ADMIN' && (
+              <button
+                onClick={() => setActiveTab('admin')}
+                className={`whitespace-nowrap px-3 py-1.5 rounded-lg ${
+                  activeTab === 'admin' ? 'bg-amber-500 text-slate-950 font-bold' : 'text-slate-300 bg-slate-900/60'
+                }`}
+              >
+                Admin
+              </button>
+            )}
+          </>
+        )}
       </div>
     </header>
   );
