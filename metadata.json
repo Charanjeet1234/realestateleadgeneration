@@ -1,0 +1,6 @@
+{
+  "name": "PropEngine UAE - Elite Dubai & Abu Dhabi Real Estate Engine",
+  "description": "PropEngine UAE is the premier search engine, live rental benchmark index, and AI advisory platform for luxury property buyers, off-plan investors, and tenants across Dubai and Abu Dhabi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
