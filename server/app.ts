@@ -10,6 +10,7 @@ import { authRouter } from './routes/auth.js';
 import { crmRouter } from './routes/crm.js';
 import { cronRouter, marketRouter } from './routes/market.js';
 import { publicRouter } from './routes/public.js';
+import { rentPricesRouter } from './routes/rentPrices.js';
 
 export function createApp() {
   const app = express();
@@ -46,6 +47,7 @@ export function createApp() {
 
   app.use('/api/auth', authRouter);
   app.use('/api/cron', cronRouter);
+  app.use('/api/rent-prices', rentPricesRouter);
   app.use('/api/admin/market', marketRouter);
   app.use('/api/admin', adminRouter);
   // Public router first: it owns POST /api/leads (capture). Everything it doesn't

@@ -231,8 +231,12 @@ model DldRent {
   contractKey   String   @unique
   registeredOn  DateTime @db.Date
   areaKey       String
+  areaName      String?
   masterKey     String?
-  rooms         Int?     // 0 = studio, 4 = 4+ bedrooms, null = unknown
+  masterName    String?
+  projectKey    String?  // building / project, e.g. "binghatti heights"
+  projectName   String?
+  rooms         Int?     // 0 = studio, 1–7 bedrooms (7 = 7+), null = unknown
   isVilla       Boolean  @default(false)
   annualAmount  Int
   sizeSqm       Float?
@@ -240,6 +244,29 @@ model DldRent {
   @@index([registeredOn])
   @@index([masterKey, registeredOn])
   @@index([areaKey, registeredOn])
+}
+
+// Rent statistics per area and per building, rebuilt after every sync from the
+// last 120 days of contracts. bucket: "0" studio, "1"–"3", "4" = 4+ bed apartments;
+// "v3" ≤3-bed, "v4", "v5" = 5+ bed villas/townhouses.
+model RentStat {
+  id         Int      @id @default(autoincrement())
+  level      String   // "area" | "building"
+  key        String   // areaKey or projectKey
+  name       String
+  areaKey    String
+  areaName   String?
+  masterName String?
+  bucket     String
+  contracts  Int
+  p25        Float
+  median     Float
+  p75        Float
+  medianSqm  Float?
+  updatedAt  DateTime @default(now())
+
+  @@unique([level, areaKey, key, bucket])
+  @@index([level, areaKey])
 }
 
 // Residential sale transactions

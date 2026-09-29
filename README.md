@@ -62,6 +62,8 @@ Every night at 05:00 Dubai time (Vercel Cron → `/api/cron/dld-sync`) the site 
 - **Sale transactions** (residential sales, excluding mortgages and gifts).
 - **Registered development projects** → appear in **Admin → Market data → New projects**. "Create draft listing" turns one into a hidden listing with the name, developer, area and completion quarter filled in; add the price, photos and payment plan, then publish. Finished and cancelled projects are filed as ignored automatically.
 
+- **Rent prices by building** → the Rent & yields page lists every Dubai area and, one click in, every building, with median rent and the middle-50% range for studio, 1, 2, 3 and 4+ bed apartments and ≤3, 4 and 5+ bed villas (last 120 days of Ejari contracts; buildings or bedroom types with fewer than 3 contracts are hidden). Visitors can search any building or area and enquire from any row; those leads arrive tagged "Rent prices by building". Public API: `GET /api/rent-prices/areas`, `/api/rent-prices/areas/:areaKey`, `/api/rent-prices/search?q=`.
+
 Setup: add `CRON_SECRET` in Vercel (any long random text) and redeploy. The first sync loads recent days first; the full history (120 days of rents, 456 days of sales) completes over the next few runs. Click **Run sync now** in Admin to speed it up, or load everything at once from your computer:
 
 ```bash

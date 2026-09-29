@@ -13,11 +13,12 @@ import {
 import { CommunityBenchmark } from '../data/marketData';
 import { useMarketData } from '../lib/context';
 import { RoiComparisonWidget } from './RoiComparisonWidget';
+import { RentPriceExplorer } from './RentPriceExplorer';
 
 interface LiveRentBenchmarksTableProps {
   onSelectCommunity: (communityName: string) => void;
   onAskAi: (prompt: string) => void;
-  onOpenLeadModal: (title?: string) => void;
+  onOpenLeadModal: (title?: string, location?: string, propertyId?: string, source?: string) => void;
 }
 
 export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = ({
@@ -70,6 +71,8 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
       </div>
 
       {/* Interactive ROI Comparison Widget */}
+      <RentPriceExplorer onEnquire={(title, location) => onOpenLeadModal(title, location, undefined, 'Rent prices by building')} />
+
       <RoiComparisonWidget onAskAi={onAskAi} onOpenLeadModal={onOpenLeadModal} />
 
       {/* Compliance Guidelines Alert Box */}

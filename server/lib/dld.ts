@@ -54,7 +54,7 @@ function parseRooms(v: string | null): number | null {
   const s = v.toLowerCase();
   if (s.includes('studio')) return 0;
   const m = s.match(/(\d+)/);
-  return m ? Math.min(parseInt(m[1], 10), 4) : null;
+  return m ? Math.min(parseInt(m[1], 10), 7) : null;
 }
 
 /** Accepts ISO, /Date(ms)/, DD-MM-YYYY and MM/DD/YYYY (DD/MM when the first part > 12). */
@@ -157,11 +157,18 @@ function mapRent(row: Row, day: Date): Prisma.DldRentCreateManyInput | null {
   const version = pick(row, 'VERSION_NUMBER', 'VERSION_EN') ?? '';
   const area = areaKey(pick(row, 'AREA_EN', 'AREA_NAME_EN'));
   if (!area) return null;
+  const areaName = pick(row, 'AREA_EN', 'AREA_NAME_EN');
+  const masterName = pick(row, 'MASTER_PROJECT_EN');
+  const projectName = pick(row, 'PROJECT_EN', 'PROJECT_NAME_EN');
   return {
     contractKey: contract ? `${contract}-${version}` : hashRow(row),
     registeredOn: day, // we query one registration day at a time, so no date parsing needed
     areaKey: area,
-    masterKey: areaKey(pick(row, 'MASTER_PROJECT_EN')) || null,
+    areaName,
+    masterKey: areaKey(masterName) || null,
+    masterName,
+    projectKey: areaKey(projectName) || null,
+    projectName,
     rooms: parseRooms(pick(row, 'ROOMS', 'ROOMS_EN')),
     isVilla: isVillaRow(row),
     annualAmount: Math.round(annual),
@@ -514,6 +521,58 @@ export async function recomputeBenchmarks() {
   return { updated: updatedCount };
 }
 
+// ───────────────────────── rent prices by area & building ─────────────────────────
+
+/**
+ * Rebuilds RentStat from the last 120 days of contracts in one SQL statement per level,
+ * using Postgres percentiles. Buckets with too few contracts are left out so a single
+ * unusual contract never becomes "the price" of a building.
+ */
+export async function rebuildRentStats() {
+  const since = addDays(utcDay(new Date()), -RENT_BACKFILL_DAYS);
+  const bucketSql = `
+    CASE
+      WHEN "isVilla" THEN CASE WHEN rooms IS NULL THEN NULL WHEN rooms <= 3 THEN 'v3' WHEN rooms = 4 THEN 'v4' ELSE 'v5' END
+      ELSE CASE WHEN rooms IS NULL THEN NULL WHEN rooms >= 4 THEN '4' ELSE rooms::text END
+    END`;
+  const stats = `
+    count(*)::int,
+    percentile_cont(0.25) WITHIN GROUP (ORDER BY "annualAmount"),
+    percentile_cont(0.5)  WITHIN GROUP (ORDER BY "annualAmount"),
+    percentile_cont(0.75) WITHIN GROUP (ORDER BY "annualAmount"),
+    percentile_cont(0.5)  WITHIN GROUP (ORDER BY "sizeSqm") FILTER (WHERE "sizeSqm" > 10)`;
+  const cols = `(level, key, name, "areaKey", "areaName", "masterName", bucket, contracts, p25, median, p75, "medianSqm", "updatedAt")`;
+
+  await prisma.$transaction([
+    prisma.$executeRawUnsafe(`DELETE FROM "RentStat"`),
+    prisma.$executeRawUnsafe(
+      `INSERT INTO "RentStat" ${cols}
+       SELECT 'area', "areaKey", COALESCE(max("areaName"), "areaKey"), "areaKey", max("areaName"),
+              mode() WITHIN GROUP (ORDER BY "masterName"), bucket, ${stats}, now()
+       FROM (SELECT *, ${bucketSql} AS bucket FROM "DldRent" WHERE "registeredOn" >= $1) r
+       WHERE bucket IS NOT NULL
+       GROUP BY "areaKey", bucket
+       HAVING count(*) >= 5`,
+      since,
+    ),
+    prisma.$executeRawUnsafe(
+      `INSERT INTO "RentStat" ${cols}
+       SELECT 'building', "projectKey", COALESCE(max("projectName"), "projectKey"), "areaKey", max("areaName"),
+              mode() WITHIN GROUP (ORDER BY "masterName"), bucket, ${stats}, now()
+       FROM (SELECT *, ${bucketSql} AS bucket FROM "DldRent" WHERE "registeredOn" >= $1 AND "projectKey" IS NOT NULL) r
+       WHERE bucket IS NOT NULL
+       GROUP BY "areaKey", "projectKey", bucket
+       HAVING count(*) >= 3`,
+      since,
+    ),
+  ]);
+  const [areas, buildings] = await Promise.all([
+    prisma.rentStat.findMany({ where: { level: 'area' }, distinct: ['areaKey'], select: { areaKey: true } }),
+    prisma.rentStat.findMany({ where: { level: 'building' }, distinct: ['areaKey', 'key'], select: { key: true } }),
+  ]);
+  return { areas: areas.length, buildings: buildings.length };
+}
+
 // ───────────────────────── orchestration ─────────────────────────
 
 async function acquireLock(): Promise<boolean> {
@@ -540,13 +599,14 @@ export async function runDldSync({ budgetMs = 38_000 }: { budgetMs?: number } = 
     const rents = await runDailyJob(JOBS[0], started + (deadline - started) * 0.65);
     const sales = await runDailyJob(JOBS[1], deadline);
     const benchmarks = await recomputeBenchmarks();
+    const rentPrices = await rebuildRentStats();
 
     // Keep storage bounded
     const today = utcDay(new Date());
     await prisma.dldRent.deleteMany({ where: { registeredOn: { lt: addDays(today, -RENT_KEEP_DAYS) } } });
     await prisma.dldSale.deleteMany({ where: { soldOn: { lt: addDays(today, -SALE_KEEP_DAYS) } } });
 
-    return { skipped: false, seconds: Math.round((Date.now() - started) / 1000), projects, rents, sales, benchmarks };
+    return { skipped: false, seconds: Math.round((Date.now() - started) / 1000), projects, rents, sales, benchmarks, rentPrices };
   } finally {
     await releaseLock();
   }
