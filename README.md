@@ -54,6 +54,26 @@ Go to `https://your-domain.ae/crm` (or "Agent login" in the footer), sign in, ch
 
 ---
 
+## Market data from the Dubai Land Department
+
+Every night at 05:00 Dubai time (Vercel Cron → `/api/cron/dld-sync`) the site pulls from DLD's free open data:
+
+- **Ejari rent contracts** (residential) → recalculates each Dubai community in the rent table: studio to 3-bed and villa rent ranges (middle 50% of contracts over 120 days), price per sq ft and gross yield (12 months of sales), and year-on-year price growth.
+- **Sale transactions** (residential sales, excluding mortgages and gifts).
+- **Registered development projects** → appear in **Admin → Market data → New projects**. "Create draft listing" turns one into a hidden listing with the name, developer, area and completion quarter filled in; add the price, photos and payment plan, then publish. Finished and cancelled projects are filed as ignored automatically.
+
+Setup: add `CRON_SECRET` in Vercel (any long random text) and redeploy. The first sync loads recent days first; the full history (120 days of rents, 456 days of sales) completes over the next few runs. Click **Run sync now** in Admin to speed it up, or load everything at once from your computer:
+
+```bash
+DATABASE_URL="<Neon connection string>" npm run dld:sync
+```
+
+Community mapping: DLD uses land-registry names (JVC is "Al Barsha South Fourth", Dubai Marina is "Marsa Dubai"). Each community's DLD names are in **Admin → Rent benchmarks → DLD area names**; set "Update from DLD data" to No to keep a community's figures manual. Abu Dhabi is not covered by DLD, so its figures stay manual.
+
+Storage: rents older than 180 days and sales older than 460 days are deleted after each sync, keeping the database within Neon's free tier.
+
+---
+
 ## Local development
 
 ```bash

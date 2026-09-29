@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Building2, LayoutList, TrendingUp, Users } from 'lucide-react';
+import { Building2, Database, LayoutList, TrendingUp, Users } from 'lucide-react';
 import type { BenchmarkRecord, DeveloperRecord } from '../../lib/api';
 import { useMarketData } from '../../lib/context';
 import { ListingsAdmin } from './ListingsAdmin';
+import { MarketAdmin } from './MarketAdmin';
 import { RecordAdmin, type FieldDef } from './RecordAdmin';
 import { TeamAdmin } from './TeamAdmin';
 
@@ -38,9 +39,21 @@ const BENCHMARK_FIELDS: FieldDef[] = [
   { key: 'growthYoY', label: 'Growth YoY', required: true, hint: 'e.g. +12.5%' },
   { key: 'rentalTrend', label: 'Trend', type: { options: ['Surging', 'High Demand', 'Stable Prime', 'Accelerating'] }, required: true },
   { key: 'sortOrder', label: 'Sort order', type: 'number' },
+  {
+    key: 'autoUpdate',
+    label: 'Update from DLD data',
+    type: 'boolean',
+    hint: 'Dubai only. Rents, price/sqft, yield and growth are recalculated after each nightly sync.',
+  },
+  {
+    key: 'dldAliases',
+    label: 'DLD area names',
+    type: 'lines',
+    hint: 'One per line: the names DLD uses for this community (area or master project), e.g. "Al Barsha South Fourth" for JVC.',
+  },
 ];
 
-type Section = 'listings' | 'developers' | 'benchmarks' | 'team';
+type Section = 'listings' | 'market' | 'developers' | 'benchmarks' | 'team';
 
 export const AdminPanel: React.FC = () => {
   const [section, setSection] = useState<Section>('listings');
@@ -48,6 +61,7 @@ export const AdminPanel: React.FC = () => {
 
   const tabs: [Section, string, React.ReactNode][] = [
     ['listings', 'Listings', <LayoutList className="w-3.5 h-3.5" />],
+    ['market', 'Market data', <Database className="w-3.5 h-3.5" />],
     ['developers', 'Developers', <Building2 className="w-3.5 h-3.5" />],
     ['benchmarks', 'Rent benchmarks', <TrendingUp className="w-3.5 h-3.5" />],
     ['team', 'Team', <Users className="w-3.5 h-3.5" />],
@@ -74,6 +88,7 @@ export const AdminPanel: React.FC = () => {
       </div>
 
       {section === 'listings' && <ListingsAdmin onDataChanged={reload} />}
+      {section === 'market' && <MarketAdmin onOpenListings={() => setSection('listings')} onDataChanged={reload} />}
       {section === 'developers' && (
         <RecordAdmin<DeveloperRecord>
           collection="developers"

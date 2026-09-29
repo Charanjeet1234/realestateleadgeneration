@@ -49,7 +49,7 @@ const propertySchema = z.object({
   community: text(120),
   category: z.enum(['Off-Plan', 'Ready Apartments', 'Ready Villas', 'Annual Rent', 'Short-Term Holiday']),
   unitTypes: strList(10, 40).min(1, 'Pick at least one unit type'),
-  priceAED: z.number().int().positive(),
+  priceAED: z.number({ message: 'Enter the starting price in AED' }).int().positive('Enter the starting price in AED'),
   priceUSD: z.number().int().positive().optional(),
   priceRangeFormatted: text(80),
   rentalBenchmarkAED: optText(80),
@@ -197,6 +197,8 @@ const benchmarkSchema = z.object({
   growthYoY: text(20),
   rentalTrend: z.enum(['Surging', 'High Demand', 'Stable Prime', 'Accelerating']),
   sortOrder: z.number().int().default(0),
+  dldAliases: strList(12, 120).default([]),
+  autoUpdate: z.boolean().default(true),
 });
 
 adminRouter.post(

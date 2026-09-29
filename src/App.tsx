@@ -190,11 +190,6 @@ export default function App() {
       .catch(() => {});
   }, [user]);
 
-  // Leaving admin tabs after sign-out
-  useEffect(() => {
-    if (!authLoading && !user && activeTab === 'admin') setActiveTab('leads');
-  }, [authLoading, user, activeTab, setActiveTab]);
-
   const handleStatsChange = useCallback((s: LeadStats) => setLeadCount(s.open), []);
 
   return (

@@ -3,7 +3,7 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Button, ErrorNote, Field, Modal, inputCls } from '../ui';
 
-type FieldType = 'text' | 'number' | 'lines' | 'textarea' | { options: string[] };
+type FieldType = 'text' | 'number' | 'lines' | 'textarea' | 'boolean' | { options: string[] };
 
 export interface FieldDef {
   key: string;
@@ -46,6 +46,10 @@ export function RecordAdmin<T extends { id: string }>({ collection, singular, fi
     const f: Record<string, string> = {};
     for (const fd of fields) {
       const v = row === 'new' ? undefined : (row as Record<string, unknown>)[fd.key];
+      if (fd.type === 'boolean') {
+        f[fd.key] = v === false ? 'false' : 'true';
+        continue;
+      }
       f[fd.key] = Array.isArray(v) ? v.join('\n') : v === null || v === undefined ? (typeof fd.type === 'object' ? fd.type.options[0] : '') : String(v);
     }
     setForm(f);
@@ -57,7 +61,8 @@ export function RecordAdmin<T extends { id: string }>({ collection, singular, fi
     const out: Record<string, unknown> = {};
     for (const fd of fields) {
       const v = form[fd.key] ?? '';
-      if (fd.type === 'number') out[fd.key] = v === '' ? undefined : Number(v.replace(/,/g, ''));
+      if (fd.type === 'boolean') out[fd.key] = v === 'true';
+      else if (fd.type === 'number') out[fd.key] = v === '' ? undefined : Number(v.replace(/,/g, ''));
       else if (fd.type === 'lines') out[fd.key] = v.split('\n').map((s) => s.trim()).filter(Boolean);
       else out[fd.key] = v === '' && !fd.required ? null : v;
     }
@@ -155,7 +160,12 @@ export function RecordAdmin<T extends { id: string }>({ collection, singular, fi
                   hint={fd.hint ?? (fd.type === 'lines' ? 'One per line' : undefined)}
                   className={fd.wide || fd.type === 'lines' || fd.type === 'textarea' ? 'sm:col-span-2' : ''}
                 >
-                  {typeof fd.type === 'object' ? (
+                  {fd.type === 'boolean' ? (
+                    <select {...common}>
+                      <option value="true">Yes</option>
+                      <option value="false">No</option>
+                    </select>
+                  ) : typeof fd.type === 'object' ? (
                     <select {...common}>
                       {fd.type.options.map((o) => (
                         <option key={o}>{o}</option>

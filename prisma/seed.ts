@@ -13,6 +13,7 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../server/lib/prisma.js';
+import { DEFAULT_DLD_ALIASES } from '../server/lib/dldAreas.js';
 import {
   PROPERTIES_DATABASE,
   DEVELOPERS_DATABASE,
@@ -62,9 +63,20 @@ async function main() {
 
   if ((await prisma.rentBenchmark.count()) === 0) {
     await prisma.rentBenchmark.createMany({
-      data: LIVE_RENTAL_BENCHMARKS.map((b, i) => ({ ...b, villaRentAED: b.villaRentAED ?? null, sortOrder: i })),
+      data: LIVE_RENTAL_BENCHMARKS.map((b, i) => ({
+        ...b,
+        villaRentAED: b.villaRentAED ?? null,
+        dldAliases: DEFAULT_DLD_ALIASES[b.community] ?? [],
+        sortOrder: i,
+      })),
     });
     console.log(`Seeded ${LIVE_RENTAL_BENCHMARKS.length} rent benchmarks.`);
+  }
+
+  // Fill in DLD area names for benchmarks that don't have any yet (never overwrites admin edits)
+  for (const b of await prisma.rentBenchmark.findMany({ where: { dldAliases: { isEmpty: true } } })) {
+    const aliases = DEFAULT_DLD_ALIASES[b.community];
+    if (aliases) await prisma.rentBenchmark.update({ where: { id: b.id }, data: { dldAliases: aliases } });
   }
 
   const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();

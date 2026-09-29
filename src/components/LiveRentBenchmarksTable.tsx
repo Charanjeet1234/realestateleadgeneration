@@ -26,6 +26,9 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
   onOpenLeadModal,
 }) => {
   const { benchmarks: LIVE_RENTAL_BENCHMARKS } = useMarketData();
+  const liveRows = LIVE_RENTAL_BENCHMARKS.filter((b) => b.dataUpdatedAt);
+  const liveUpdatedAt = liveRows.map((b) => b.dataUpdatedAt!).sort().at(-1) ?? null;
+  const liveContracts = liveRows.reduce((sum, b) => sum + (b.rentSampleSize ?? 0), 0);
   const [search, setSearch] = useState('');
   const [selectedEmirate, setSelectedEmirate] = useState<'ALL' | 'Dubai' | 'Abu Dhabi'>('ALL');
 
@@ -42,15 +45,18 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
       {/* Title Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold mb-2">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-            Live Q3/Q4 Real-Time Rental Benchmarks Index
-          </div>
-          <h2 className="text-2xl sm:text-4xl font-serif font-medium text-slate-50 tracking-tight">
-            Dubai & Abu Dhabi Rental Index & Yield Matrix
+          <h2 className="text-4xl sm:text-5xl font-serif font-normal text-slate-50 tracking-[-0.02em]">
+            Rents &amp; yields by community
           </h2>
-          <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-            Verified average annual rental brackets (AED), cheque standard practices, service charge ranges, and investor net yields updated weekly from DLD & ADREC transaction registries.
+          <p className="text-base text-slate-400 mt-3 max-w-2xl leading-relaxed">
+            {liveUpdatedAt ? (
+              <>
+                Dubai figures are calculated from {liveContracts.toLocaleString()} Ejari rent contracts and 12 months of sales registered with the Dubai Land Department, last updated{' '}
+                {new Date(liveUpdatedAt).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}. Rent ranges show the middle half of contracts; yields are gross. Abu Dhabi figures are agency estimates.
+              </>
+            ) : (
+              'Annual rent ranges, cheque norms, service charges and yields by community. Figures are agency estimates.'
+            )}
           </p>
         </div>
 
@@ -156,7 +162,7 @@ export const LiveRentBenchmarksTable: React.FC<LiveRentBenchmarksTableProps> = (
               <th className="py-3.5 px-3">Avg Rate / Sqft</th>
               <th className="py-3.5 px-3">1 Bedroom Rent (AED)</th>
               <th className="py-3.5 px-3">2 Bedroom Rent (AED)</th>
-              <th className="py-3.5 px-3">Net Rental Yield</th>
+              <th className="py-3.5 px-3">Rental yield</th>
               <th className="py-3.5 px-3">Cheques Norm</th>
               <th className="py-3.5 px-3">Service Charge</th>
               <th className="py-3.5 px-4 text-right">Actions</th>

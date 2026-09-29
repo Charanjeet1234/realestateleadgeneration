@@ -145,7 +145,14 @@ export interface AdminUser extends TeamMember {
 
 // DB rows carry an id and timestamps on top of the original static shapes
 export type DeveloperRecord = DeveloperInfo & { id: string; sortOrder?: number };
-export type BenchmarkRecord = CommunityBenchmark & { id: string; sortOrder?: number };
+export type BenchmarkRecord = CommunityBenchmark & {
+  id: string;
+  sortOrder?: number;
+  dldAliases?: string[];
+  autoUpdate?: boolean;
+  dataUpdatedAt?: string | null;
+  rentSampleSize?: number | null;
+};
 export type AdminProperty = Property & {
   published: boolean;
   sortOrder: number;

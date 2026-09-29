@@ -171,7 +171,8 @@ model Property {
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  leads Lead[]
+  leads       Lead[]
+  dldProjects DldProject[]
 
   @@index([published, emirate, category])
 }
@@ -210,6 +211,92 @@ model RentBenchmark {
   growthYoY            String
   rentalTrend          String
   sortOrder            Int      @default(0)
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  // DLD area / master-project names that map to this community (e.g. JVC → "Jumeirah Village Circle", "Al Barsha South Fourth")
+  dldAliases           String[]
+  // Recalculate rents, price/sqft, yield and growth from DLD data after each sync
+  autoUpdate           Boolean   @default(true)
+  dataUpdatedAt        DateTime?
+  rentSampleSize       Int?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Market data synced daily from Dubai Land Department open data
+// ─────────────────────────────────────────────
+
+// Residential Ejari rent contracts (only the columns we aggregate)
+model DldRent {
+  id            Int      @id @default(autoincrement())
+  contractKey   String   @unique
+  registeredOn  DateTime @db.Date
+  areaKey       String
+  masterKey     String?
+  rooms         Int?     // 0 = studio, 4 = 4+ bedrooms, null = unknown
+  isVilla       Boolean  @default(false)
+  annualAmount  Int
+  sizeSqm       Float?
+
+  @@index([registeredOn])
+  @@index([masterKey, registeredOn])
+  @@index([areaKey, registeredOn])
+}
+
+// Residential sale transactions
+model DldSale {
+  id          Int      @id @default(autoincrement())
+  txnNumber   String   @unique
+  soldOn      DateTime @db.Date
+  areaKey     String
+  masterKey   String?
+  project     String?
+  isOffplan   Boolean  @default(false)
+  rooms       Int?
+  isVilla     Boolean  @default(false)
+  value       Float
+  sizeSqm     Float?
+
+  @@index([soldOn])
+  @@index([masterKey, soldOn])
+  @@index([areaKey, soldOn])
+}
+
+enum ProjectReview {
+  NEW
+  LISTED
+  IGNORED
+}
+
+// Development projects registered with DLD — reviewed by admins before becoming listings
+model DldProject {
+  id              String        @id @default(cuid())
+  dldKey          String        @unique
+  name            String
+  developer       String?
+  area            String?
+  status          String?
+  startDate       DateTime?
+  completionDate  DateTime?
+  percentComplete Float?
+  units           Int?
+  raw             Json
+  review          ProjectReview @default(NEW)
+  propertyId      String?
+  property        Property?     @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  firstSeenAt     DateTime      @default(now())
+  lastSeenAt      DateTime      @default(now())
+
+  @@index([review, firstSeenAt])
+}
+
+// Progress and health of each sync job (rents, sales, projects, benchmarks)
+model SyncState {
+  id            String    @id
+  cursorDate    DateTime? @db.Date
+  lastRunAt     DateTime?
+  lastSuccessAt DateTime?
+  lastError     String?
+  lastCount     Int       @default(0)
+  totalRows     Int       @default(0)
+  info          Json?
 }
