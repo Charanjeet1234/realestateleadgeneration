@@ -92,33 +92,61 @@ export const MarketAdmin: React.FC<{ onOpenListings: () => void; onDataChanged: 
     setSyncing(true);
     setSyncNote(null);
     setError(null);
+    const lines: string[] = [];
+    const say = (line: string) => {
+      lines.push(line);
+      setSyncNote(lines.join('\n'));
+    };
     try {
-      const r = await api.post<{
-        skipped: boolean;
-        reason?: string;
-        seconds?: number;
-        rents?: { inserted: number; error: string | null; historyComplete: boolean };
-        sales?: { inserted: number; error: string | null; historyComplete: boolean };
-        projects?: { created: number; error: string | null };
-      }>('/admin/market/sync');
-      if (r.skipped) setSyncNote(r.reason ?? 'Skipped');
-      else {
-        const errs = [r.rents?.error, r.sales?.error, r.projects?.error].filter(Boolean);
-        const behind = !r.rents?.historyComplete || !r.sales?.historyComplete;
-        setSyncNote(
-          errs.length
-            ? `Finished with problems: ${errs.join(' · ')}`
-            : `Added ${r.rents?.inserted.toLocaleString()} rent contracts, ${r.sales?.inserted.toLocaleString()} sales and ${r.projects?.created} projects in ${r.seconds}s.${
-                behind ? ' History is still loading: run again, or it will continue tonight.' : ''
-              }`,
+      say('Checking the connection to DLD…');
+      const test = await api.get<{ ok: boolean; ms: number; error?: string; contractsThatDay?: number; endpoint: string }>(
+        '/admin/market/test',
+      );
+      if (!test.ok) {
+        lines[lines.length - 1] = `Your server could not get data from DLD: ${test.error}.`;
+        say(
+          'The sync needs your server to reach gateway.dubailand.gov.ae. If this keeps happening, DLD may be blocking requests from Vercel\'s servers; send me this message and I\'ll set up an alternative route.',
         );
+        return;
       }
-      await Promise.all([loadStatus(), loadProjects()]);
-      onDataChanged();
+      lines[lines.length - 1] = `Connected to DLD in ${(test.ms / 1000).toFixed(1)}s.`;
+
+      const steps: [string, 'projects' | 'rents' | 'sales' | 'stats'][] = [
+        ['registered projects', 'projects'],
+        ['rent contracts', 'rents'],
+        ['sale transactions', 'sales'],
+        ['rent prices and benchmarks', 'stats'],
+      ];
+      for (const [label, step] of steps) {
+        say(`Syncing ${label}…`);
+        const r = await api.post<{
+          skipped: boolean;
+          reason?: string;
+          result?: { inserted?: number; created?: number; error?: string | null; historyComplete?: boolean; rentPrices?: { areas: number; buildings: number } };
+        }>('/admin/market/sync', { step });
+        if (r.skipped) {
+          lines[lines.length - 1] = r.reason ?? 'Skipped.';
+          setSyncNote(lines.join('\n'));
+          break;
+        }
+        const res = r.result ?? {};
+        let done = `${label[0].toUpperCase()}${label.slice(1)}: `;
+        if (res.error) done += `problem: ${res.error}`;
+        else if (step === 'projects') done += `${res.created ?? 0} new`;
+        else if (step === 'stats') done += `${res.rentPrices?.areas ?? 0} areas, ${res.rentPrices?.buildings ?? 0} buildings`;
+        else done += `${(res.inserted ?? 0).toLocaleString()} added${res.historyComplete ? '' : ', more history to load'}`;
+        lines[lines.length - 1] = done;
+        setSyncNote(lines.join('\n'));
+      }
+      if (lines.some((l) => l.includes('more history'))) say('Run again to keep loading history, or it will continue tonight.');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Sync failed');
+      const msg = e instanceof Error ? e.message : 'Sync failed';
+      lines[lines.length - 1] = `${lines[lines.length - 1].replace('…', '')} failed: ${msg}`;
+      setSyncNote(lines.join('\n'));
     } finally {
       setSyncing(false);
+      await Promise.all([loadStatus(), loadProjects()]).catch(() => {});
+      onDataChanged();
     }
   };
 
@@ -165,8 +193,13 @@ export const MarketAdmin: React.FC<{ onOpenListings: () => void; onDataChanged: 
           </div>
         ) : null}
         <p className="mt-3 text-[12px] text-slate-500">
-          {s?.lastSuccessAt ? `Last successful sync ${timeAgo(s.lastSuccessAt)}` : 'Not synced yet'}
+          {s?.lastSuccessAt ? `Last successful sync ${timeAgo(s.lastSuccessAt)}` : s?.lastRunAt ? 'No successful sync yet' : 'Not synced yet'}
         </p>
+        {s?.lastRunAt && !s.lastError && (!s.lastSuccessAt || new Date(s.lastRunAt) > new Date(s.lastSuccessAt)) && (
+          <p className="mt-1 text-[12px] text-rose-300">
+            Last attempt {timeAgo(s.lastRunAt)} did not finish (the server was stopped before it could save).
+          </p>
+        )}
         {s?.lastError && <p className="mt-2 text-[12px] text-rose-300 break-words">{s.lastError}</p>}
       </div>
     );
@@ -182,7 +215,7 @@ export const MarketAdmin: React.FC<{ onOpenListings: () => void; onDataChanged: 
         </p>
         <Button variant="primary" onClick={runSync} disabled={syncing}>
           <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-          {syncing ? 'Syncing (up to a minute)…' : 'Run sync now'}
+          {syncing ? 'Syncing…' : 'Run sync now'}
         </Button>
       </div>
 
@@ -193,7 +226,7 @@ export const MarketAdmin: React.FC<{ onOpenListings: () => void; onDataChanged: 
           text). &ldquo;Run sync now&rdquo; still works.
         </div>
       )}
-      {syncNote && <div className="p-3 rounded-xl border border-slate-700 bg-slate-900 text-sm text-slate-300">{syncNote}</div>}
+      {syncNote && <div className="p-3 rounded-xl border border-slate-700 bg-slate-900 text-sm text-slate-300 whitespace-pre-line leading-relaxed">{syncNote}</div>}
 
       {status && (
         <div className="grid md:grid-cols-3 gap-4">

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { requireAdmin } from '../lib/auth.js';
-import { runDldSync } from '../lib/dld.js';
+import { runDldStep, runDldSync, testDldConnection } from '../lib/dld.js';
 import { asyncHandler, HttpError, parse, z } from '../lib/http.js';
 import { prisma, type Prisma } from '../lib/prisma.js';
 
@@ -42,10 +42,19 @@ marketRouter.get(
   }),
 );
 
+marketRouter.get(
+  '/test',
+  asyncHandler(async (_req, res) => {
+    res.json(await testDldConnection());
+  }),
+);
+
+// Admin "Run sync now" calls one short step at a time (projects → rents → sales → stats).
 marketRouter.post(
   '/sync',
-  asyncHandler(async (_req, res) => {
-    res.json(await runDldSync({ budgetMs: 38_000 }));
+  asyncHandler(async (req, res) => {
+    const { step } = parse(z.object({ step: z.enum(['projects', 'rents', 'sales', 'stats']).optional() }), req.body ?? {});
+    res.json(step ? await runDldStep(step, 20_000) : await runDldSync({ budgetMs: 38_000 }));
   }),
 );
 

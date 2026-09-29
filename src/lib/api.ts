@@ -6,6 +6,28 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Our API returns { error: "message" }. Vercel's platform errors (timeouts, crashes)
+ * return { error: { code, message } } or plain text, so normalise all of them.
+ */
+function errorMessage(status: number, data: unknown, text: string): string {
+  const err = (data as { error?: unknown } | null)?.error;
+  const raw =
+    typeof err === 'string'
+      ? err
+      : err && typeof err === 'object'
+        ? String((err as { message?: unknown }).message ?? (err as { code?: unknown }).code ?? '')
+        : text.slice(0, 300);
+  if (/FUNCTION_INVOCATION_TIMEOUT/.test(raw) || status === 504) {
+    return 'The server ran out of time before finishing (Vercel function timeout). Try again; progress is saved step by step.';
+  }
+  if (/FUNCTION_INVOCATION_FAILED/.test(raw)) {
+    return 'The server function crashed (Vercel FUNCTION_INVOCATION_FAILED). Check the function logs in Vercel for the cause.';
+  }
+  const clean = raw.replace(/\s+/g, ' ').trim();
+  return clean && !/^<(!doctype|html)/i.test(clean) ? clean : `Request failed (${status})`;
+}
+
 async function request<T>(path: string, init: RequestInit & { json?: unknown } = {}): Promise<T> {
   const { json, headers, ...rest } = init;
   const res = await fetch(`/api${path}`, {
@@ -21,7 +43,7 @@ async function request<T>(path: string, init: RequestInit & { json?: unknown } =
   const text = await res.text();
   const data = text ? (() => { try { return JSON.parse(text); } catch { return null; } })() : null;
   if (!res.ok) {
-    throw new ApiError(res.status, data?.error || `Request failed (${res.status})`);
+    throw new ApiError(res.status, errorMessage(res.status, data, text));
   }
   return data as T;
 }

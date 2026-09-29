@@ -205,6 +205,52 @@ async function getState(id: string) {
   return prisma.syncState.upsert({ where: { id }, create: { id }, update: {} });
 }
 
+/** Record the attempt before any network call, so a run killed by the platform still shows up. */
+async function markStarted(id: string) {
+  await prisma.syncState.update({ where: { id }, data: { lastRunAt: new Date() } });
+}
+
+/** Quick connectivity check: one small DLD request with a short timeout. */
+export async function testDldConnection() {
+  const started = Date.now();
+  const day = utcDay(addDays(new Date(), -2));
+  try {
+    const { rows, total } = await dldPost(
+      'rents',
+      {
+        P_FROM_DATE: dldDate(day),
+        P_TO_DATE: dldDate(day),
+        P_DATE_TYPE: '1',
+        P_IS_FREE_HOLD: '',
+        P_VERSION: '',
+        P_AREA_ID: '',
+        P_USAGE_ID: '',
+        P_PROP_TYPE_ID: '',
+        P_TAKE: '1',
+        P_SKIP: '0',
+        P_SORT: '',
+      },
+      Date.now() + 14_000,
+    );
+    return {
+      ok: true,
+      ms: Date.now() - started,
+      contractsThatDay: total,
+      sampleKeys: rows[0] ? Object.keys(rows[0]) : [],
+      endpoint: BASE,
+    };
+  } catch (err) {
+    const e = err as Error & { cause?: { code?: string; message?: string } };
+    const detail = e.cause?.code || e.cause?.message;
+    return {
+      ok: false,
+      ms: Date.now() - started,
+      error: `${e.name === 'TimeoutError' || e instanceof OutOfTime ? 'No response from DLD within 12 seconds' : e.message}${detail ? ` (${detail})` : ''}`,
+      endpoint: BASE,
+    };
+  }
+}
+
 interface DailyJob {
   id: 'rents' | 'sales';
   command: string;
@@ -269,6 +315,7 @@ const JOBS: DailyJob[] = [
  */
 async function runDailyJob(job: DailyJob, deadline: number) {
   const state = await getState(job.id);
+  await markStarted(job.id);
   const info = (state.info ?? {}) as { oldestDone?: string; sampleKeys?: string[] };
   const yesterday = utcDay(addDays(new Date(), -1));
   const target = addDays(yesterday, -(job.backfillDays - 1));
@@ -340,6 +387,7 @@ async function runDailyJob(job: DailyJob, deadline: number) {
 
 async function syncProjects(deadline: number) {
   const state = await getState('projects');
+  await markStarted('projects');
   const today = utcDay(new Date());
   // First run looks back two years to seed the inbox; later runs only re-check recent registrations.
   const from = addDays(today, state.lastSuccessAt ? -60 : -730);
@@ -587,6 +635,27 @@ async function acquireLock(): Promise<boolean> {
 
 async function releaseLock() {
   await prisma.syncState.update({ where: { id: 'lock' }, data: { lastRunAt: null } });
+}
+
+export type SyncStep = 'projects' | 'rents' | 'sales' | 'stats';
+
+/** One short step, used by "Run sync now" so each request stays far below Vercel's time limit. */
+export async function runDldStep(step: SyncStep, budgetMs = 20_000) {
+  if (!(await acquireLock())) return { skipped: true, reason: 'A sync is already running. Try again in a minute.' };
+  const deadline = Date.now() + budgetMs;
+  try {
+    if (step === 'projects') return { skipped: false, step, result: await syncProjects(deadline) };
+    if (step === 'rents') return { skipped: false, step, result: await runDailyJob(JOBS[0], deadline) };
+    if (step === 'sales') return { skipped: false, step, result: await runDailyJob(JOBS[1], deadline) };
+    const benchmarks = await recomputeBenchmarks();
+    const rentPrices = await rebuildRentStats();
+    const today = utcDay(new Date());
+    await prisma.dldRent.deleteMany({ where: { registeredOn: { lt: addDays(today, -RENT_KEEP_DAYS) } } });
+    await prisma.dldSale.deleteMany({ where: { soldOn: { lt: addDays(today, -SALE_KEEP_DAYS) } } });
+    return { skipped: false, step, result: { benchmarks, rentPrices } };
+  } finally {
+    await releaseLock();
+  }
 }
 
 export async function runDldSync({ budgetMs = 38_000 }: { budgetMs?: number } = {}) {
