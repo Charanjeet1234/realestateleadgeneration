@@ -1,8 +1,13 @@
 /**
- * Seeds listings, developers and rent benchmarks from src/data/marketData.ts,
- * and creates the first admin account from ADMIN_EMAIL / ADMIN_PASSWORD.
+ * Seeds starter data and the first admin account.
  *
- * Safe to re-run: records are upserted, and existing admins are left alone.
+ * Runs automatically on every Vercel build (see "vercel-build"), so it is
+ * deliberately non-destructive:
+ *  - listings / developers / benchmarks are inserted only when that table is EMPTY,
+ *    so edits and deletions made in the admin panel are never overwritten;
+ *  - the admin account (ADMIN_EMAIL / ADMIN_PASSWORD) is created only if no user
+ *    with that email exists — changing the password later is safe.
+ *
  *   npm run db:seed
  */
 import 'dotenv/config';
@@ -15,45 +20,51 @@ import {
 } from '../src/data/marketData.js';
 
 async function main() {
-  // Properties — keep the original ids (prop-1 …) so existing links keep working
-  for (const [i, p] of PROPERTIES_DATABASE.entries()) {
-    const data = {
-      title: p.title,
-      tagline: p.tagline,
-      developer: p.developer,
-      developerTier: p.developerTier,
-      emirate: p.emirate,
-      community: p.community,
-      category: p.category,
-      unitTypes: [...p.unitTypes],
-      priceAED: p.priceAED,
-      priceUSD: p.priceUSD,
-      priceRangeFormatted: p.priceRangeFormatted,
-      rentalBenchmarkAED: p.rentalBenchmarkAED ?? null,
-      handoverDate: p.handoverDate ?? null,
-      paymentPlan: p.paymentPlan ?? undefined,
-      rentalFactors: p.rentalFactors ?? undefined,
-      projectedROI: p.projectedROI,
-      capitalGrowthForecast: p.capitalGrowthForecast,
-      goldenVisaEligible: p.goldenVisaEligible,
-      imageUrl: p.imageUrl,
-      featured: p.featured,
-      dldCosts: p.dldCosts,
-      highlights: p.highlights,
-      floorPlanCount: p.floorPlanCount,
-      sortOrder: i,
-    };
-    await prisma.property.upsert({ where: { id: p.id }, create: { id: p.id, ...data }, update: data });
+  if ((await prisma.property.count()) === 0) {
+    await prisma.property.createMany({
+      data: PROPERTIES_DATABASE.map((p, i) => ({
+        id: p.id, // keep original ids (prop-1 …)
+        title: p.title,
+        tagline: p.tagline,
+        developer: p.developer,
+        developerTier: p.developerTier,
+        emirate: p.emirate,
+        community: p.community,
+        category: p.category,
+        unitTypes: [...p.unitTypes],
+        priceAED: p.priceAED,
+        priceUSD: p.priceUSD,
+        priceRangeFormatted: p.priceRangeFormatted,
+        rentalBenchmarkAED: p.rentalBenchmarkAED ?? null,
+        handoverDate: p.handoverDate ?? null,
+        paymentPlan: p.paymentPlan ?? undefined,
+        rentalFactors: p.rentalFactors ?? undefined,
+        projectedROI: p.projectedROI,
+        capitalGrowthForecast: p.capitalGrowthForecast,
+        goldenVisaEligible: p.goldenVisaEligible,
+        imageUrl: p.imageUrl,
+        featured: p.featured,
+        dldCosts: p.dldCosts,
+        highlights: p.highlights,
+        floorPlanCount: p.floorPlanCount,
+        sortOrder: i,
+      })),
+    });
+    console.log(`Seeded ${PROPERTIES_DATABASE.length} properties.`);
   }
 
-  for (const [i, d] of DEVELOPERS_DATABASE.entries()) {
-    const data = { ...d, signatureMasterpieces: [...d.signatureMasterpieces], sortOrder: i };
-    await prisma.developer.upsert({ where: { name: d.name }, create: data, update: data });
+  if ((await prisma.developer.count()) === 0) {
+    await prisma.developer.createMany({
+      data: DEVELOPERS_DATABASE.map((d, i) => ({ ...d, signatureMasterpieces: [...d.signatureMasterpieces], sortOrder: i })),
+    });
+    console.log(`Seeded ${DEVELOPERS_DATABASE.length} developers.`);
   }
 
-  for (const [i, b] of LIVE_RENTAL_BENCHMARKS.entries()) {
-    const data = { ...b, villaRentAED: b.villaRentAED ?? null, sortOrder: i };
-    await prisma.rentBenchmark.upsert({ where: { community: b.community }, create: data, update: data });
+  if ((await prisma.rentBenchmark.count()) === 0) {
+    await prisma.rentBenchmark.createMany({
+      data: LIVE_RENTAL_BENCHMARKS.map((b, i) => ({ ...b, villaRentAED: b.villaRentAED ?? null, sortOrder: i })),
+    });
+    console.log(`Seeded ${LIVE_RENTAL_BENCHMARKS.length} rent benchmarks.`);
   }
 
   const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
@@ -71,13 +82,9 @@ async function main() {
       });
       console.log(`Created admin account ${adminEmail}`);
     }
-  } else {
-    console.warn('ADMIN_EMAIL / ADMIN_PASSWORD not set — no admin account created.');
+  } else if ((await prisma.user.count()) === 0) {
+    console.warn('No users yet and ADMIN_EMAIL / ADMIN_PASSWORD not set — nobody can sign in to the CRM.');
   }
-
-  console.log(
-    `Seeded ${PROPERTIES_DATABASE.length} properties, ${DEVELOPERS_DATABASE.length} developers, ${LIVE_RENTAL_BENCHMARKS.length} benchmarks.`,
-  );
 }
 
 main()

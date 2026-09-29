@@ -9,7 +9,7 @@ export default defineConfig({
   },
   datasource: {
     // Migrations need a direct (non-pooled) connection. On Neon/Supabase set
-    // DIRECT_URL to the direct string and DATABASE_URL to the pooled one.
-    url: process.env.DIRECT_URL || env('DATABASE_URL'),
+    // DIRECT_URL (or Vercel-Neon's DATABASE_URL_UNPOOLED) to the direct string.
+    url: process.env.DIRECT_URL || process.env.DATABASE_URL_UNPOOLED || env('DATABASE_URL'),
   },
 });

@@ -28,35 +28,26 @@ Real-estate lead generation site for Dubai & Abu Dhabi with a built-in broker CR
 ## Deploy to Vercel
 
 ### 1. Create a Postgres database
-Easiest: in your Vercel project → **Storage → Create → Neon (Postgres)**. It adds `DATABASE_URL` (pooled) for you. Also copy the **direct / unpooled** connection string into `DIRECT_URL` — migrations need it.
+In your Vercel project → **Storage → Create Database → Neon**, and connect it to the project. This adds `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct, used for migrations) automatically.
 
-Supabase, Railway or any Postgres 14+ also works.
+Using Supabase, Railway or another Postgres 14+ instead? Set `DATABASE_URL` to the pooled string and `DIRECT_URL` to the direct one.
 
 ### 2. Set environment variables
 Vercel → Project → **Settings → Environment Variables**. See `.env.example` for all of them. Minimum:
 
 | Variable | Value |
 |---|---|
-| `DATABASE_URL` | pooled connection string |
-| `DIRECT_URL` | direct connection string |
 | `JWT_SECRET` | `openssl rand -base64 48` |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | your first admin login |
 | `APP_URL` | `https://your-domain.ae` |
 | `GEMINI_API_KEY` | for the AI assistant (optional) |
 | `SMTP_*`, `LEAD_ALERT_EMAILS` | for email alerts (strongly recommended) |
 
 ### 3. Deploy
-Push to GitHub and import the repo in Vercel (or `vercel --prod`). The build runs `prisma migrate deploy` automatically, so the tables are created on first deploy.
+Push to `main` (or redeploy). The build runs `prisma migrate deploy`, then the seed, then the frontend build.
 
-### 4. Load listings and create your admin account (once)
-From your computer, pointing at the production database:
-
-```bash
-DATABASE_URL="<direct connection string>" \
-ADMIN_EMAIL="you@your-domain.ae" ADMIN_PASSWORD="<strong password>" \
-npm run db:seed
-```
-
-This loads the 12 listings, developers and rent benchmarks that were previously hardcoded, and creates your admin login. Re-running it is safe.
+### 4. What the seed does on each build
+It fills listings, developers and rent benchmarks **only if that table is empty**, and creates the `ADMIN_EMAIL` account **only if it doesn't exist**. Edits made in the admin panel are never overwritten, and changing your password later is safe. You can remove `ADMIN_PASSWORD` from Vercel once you've signed in.
 
 ### 5. Sign in
 Go to `https://your-domain.ae/crm` (or "Agent login" in the footer), sign in, change your password, then add your agents under **Admin → Team**. Add each agent's WhatsApp number if you want them to receive WhatsApp alerts.
@@ -69,7 +60,7 @@ Go to `https://your-domain.ae/crm` (or "Agent login" in the footer), sign in, ch
 cp .env.example .env         # fill in DATABASE_URL, JWT_SECRET, ADMIN_*
 npm install                   # also generates the Prisma client
 npm run db:migrate            # create tables
-npm run db:seed               # listings + admin account
+npm run db:seed               # starter listings + admin account (only fills empty tables)
 npm run dev                   # http://localhost:3000
 ```
 
