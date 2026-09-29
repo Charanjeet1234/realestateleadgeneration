@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
 import { AuthProvider, MarketDataProvider } from './lib/context';
 import { captureAttribution } from './lib/attribution';
 import './index.css';
