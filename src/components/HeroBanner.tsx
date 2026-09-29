@@ -1,11 +1,6 @@
 import React from 'react';
 import { Search, MapPin, Building, Shield, Sparkles, Filter, ChevronDown, CheckCircle2 } from 'lucide-react';
-import {
-  ALL_COMMUNITIES,
-  ALL_DEVELOPERS,
-  DUBAI_COMMUNITIES,
-  ABU_DHABI_COMMUNITIES,
-} from '../data/marketData';
+import { useMarketData } from '../lib/context';
 
 export interface FilterState {
   transactionType: 'ALL' | 'Off-Plan' | 'Ready Apartments' | 'Ready Villas' | 'Annual Rent' | 'Short-Term Holiday';
@@ -26,6 +21,13 @@ interface HeroBannerProps {
   onSelectAiSearch: (query: string) => void;
 }
 
+const UNIT_LABELS: Record<string, string> = {
+  '1BR': '1 Bedroom',
+  '2BR': '2 Bedroom',
+  '3BR+': '3+ Bedroom',
+  'Villa/Townhouse': 'Villa / Townhouse',
+};
+
 export const HeroBanner: React.FC<HeroBannerProps> = ({
   filters,
   setFilters,
@@ -33,12 +35,14 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
   onOpenLeadModal,
   onSelectAiSearch,
 }) => {
-  const availableCommunities =
-    filters.emirate === 'Dubai'
-      ? DUBAI_COMMUNITIES
-      : filters.emirate === 'Abu Dhabi'
-      ? ABU_DHABI_COMMUNITIES
-      : ALL_COMMUNITIES;
+  // Options come from the live listings, so a new community or developer added in
+  // the admin panel appears here automatically (and empty options never show).
+  const { properties } = useMarketData();
+  const inEmirate = properties.filter((p) => filters.emirate === 'ALL' || p.emirate === filters.emirate);
+  const uniqueSorted = (values: string[]) => [...new Set(values)].sort((a, b) => a.localeCompare(b));
+  const availableCommunities = uniqueSorted(inEmirate.map((p) => p.community));
+  const availableDevelopers = uniqueSorted(inEmirate.map((p) => p.developer));
+  const availableUnitTypes = uniqueSorted(inEmirate.flatMap((p) => p.unitTypes));
 
   const trending = [
     ['JVC yields above 8%', 'What are the highest rental yield off-plan projects in JVC & Business Bay under AED 1.2M?'],
@@ -165,7 +169,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             <div className="flex items-center gap-1 bg-slate-950/70 p-1 rounded-xl border border-slate-800 text-xs">
               <span className="text-slate-400 px-2 font-medium">Emirate:</span>
               <button
-                onClick={() => setFilters(f => ({ ...f, emirate: 'ALL', community: 'ALL' }))}
+                onClick={() => setFilters(f => ({ ...f, emirate: 'ALL', community: 'ALL', developer: 'ALL' }))}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
                   filters.emirate === 'ALL' ? 'bg-slate-800 text-amber-300' : 'text-slate-400 hover:text-slate-50'
                 }`}
@@ -173,7 +177,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 All UAE
               </button>
               <button
-                onClick={() => setFilters(f => ({ ...f, emirate: 'Dubai', community: 'ALL' }))}
+                onClick={() => setFilters(f => ({ ...f, emirate: 'Dubai', community: 'ALL', developer: 'ALL' }))}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
                   filters.emirate === 'Dubai' ? 'bg-slate-800 text-amber-300' : 'text-slate-400 hover:text-slate-50'
                 }`}
@@ -181,7 +185,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 Dubai
               </button>
               <button
-                onClick={() => setFilters(f => ({ ...f, emirate: 'Abu Dhabi', community: 'ALL' }))}
+                onClick={() => setFilters(f => ({ ...f, emirate: 'Abu Dhabi', community: 'ALL', developer: 'ALL' }))}
                 className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
                   filters.emirate === 'Abu Dhabi' ? 'bg-slate-800 text-amber-300' : 'text-slate-400 hover:text-slate-50'
                 }`}
@@ -246,7 +250,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                   className="w-full px-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-slate-50 focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
                 >
                   <option value="ALL">All Master Developers</option>
-                  {ALL_DEVELOPERS.map((d) => (
+                  {availableDevelopers.map((d) => (
                     <option key={d} value={d}>
                       {d}
                     </option>
@@ -268,12 +272,11 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                   className="w-full px-3 py-2 bg-slate-900/90 border border-slate-700/80 rounded-xl text-xs text-slate-50 focus:outline-none focus:border-amber-400 transition-colors appearance-none cursor-pointer"
                 >
                   <option value="ALL">All Bed Configurations</option>
-                  <option value="Studio">Studio</option>
-                  <option value="1BR">1 Bedroom</option>
-                  <option value="2BR">2 Bedroom</option>
-                  <option value="3BR+">3+ Bedroom</option>
-                  <option value="Villa/Townhouse">Villa / Townhouse</option>
-                  <option value="Penthouse">Penthouse</option>
+                  {availableUnitTypes.map((u) => (
+                    <option key={u} value={u}>
+                      {UNIT_LABELS[u] ?? u}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
